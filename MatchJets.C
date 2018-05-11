@@ -16,35 +16,45 @@
 using namespace std;
 
 
-static const Double_t pi  = TMath::Pi();
-static const Double_t rDf = pi / 4.;
-
 // filepaths
-static const TString gName("input/geant/pp200r12pt35g.r04rm1full.d6m1y2018.root");
-static const TString uName("input/mudst/pp200r12pt35u.r04rm1hc100full.d6m1y2018.root");
-static const TString oName("pp200r12pg35.r04rm1hc100full.r04q15.d7m1y2018.root");
+static const TString SOutDefault("test.root");
+static const TString SGntDefault("../JetMaker/mc/pp200r9pt35rff.particle.r03rm1chrg.root");
+static const TString SMuDefault("../JetMaker/mudst/pp200r9pt35rff.et920vz55had.r03rm1chrg.root");
 
 // jet parameters
-static const Double_t MinJetPt  = 0.2;
-static const Double_t MinArea   = 0.5;  // R03: 0.2, R04: 0.5, R05: 0.65, R07: 1.2
-static const Double_t MinPi0Tsp = 0.;
-static const Double_t MaxPi0Tsp = 0.08;
-
-// matching parameters
-static const Double_t Rcut    = 0.4;   // Rcut = Rjet
-static const Double_t Qmin    = 0.15;  // fraction of jet pT must be above Qmin
-static const Double_t Qmax    = 1.5;   // fraction of jet pT must be below Qmax
-static const Double_t HardCut = 10.;   // jets w/ pT>HardCut are considered 'hard'
-static const Double_t Gcut    = 0.;    // pTgnt must be above this
-static const Double_t Ucut    = 0.;    // pTmu must be above this
+static const Double_t MinJetPt = 0.2;
+static const Double_t MinArea  = 0.2;  // R03: 0.2, R04: 0.5, R05: 0.65, R07: 1.2
+static const Double_t Rcut     = 0.3;  // Rcut = Rjet
 
 
 
-void MatchJets(const TString gPath=gName, const TString uPath=uName, const TString oPath=oName, Bool_t inBatchMode=false) {
+void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, const TString oPath=SOutDefault, Bool_t inBatchMode=false) {
 
-  cout << "\nBeginning match script!" << endl;
+  cout << "\n  Beginning match script!" << endl;
 
 
+  // event constants
+  const Double_t MaxVz     = 55.;
+  const Double_t MaxTrgEta = 0.9;
+  const Double_t MinTrgEt  = 9.;
+  const Double_t MaxTrgEt  = 20.;
+  const Double_t MinTrgTsp = 3.;
+  const Double_t MaxTrgTsp = 100.;
+
+  // matching constants
+  const Double_t Qmin    = 0.15;  // fraction of jet pT must be above Qmin
+  const Double_t Qmax    = 1.5;   // fraction of jet pT must be below Qmax
+  const Double_t HardCut = 10.;   // jets w/ pT>HardCut are considered 'hard'
+  const Double_t Gcut    = 0.;    // pTgnt must be above this
+  const Double_t Ucut    = 0.;    // pTmu must be above this
+
+  // misc. constants
+  const Double_t pi  = TMath::Pi();
+  const Double_t rDf = pi / 4.;
+  cout << "    Opening files and grabbing trees..." << endl;
+
+
+  // open files
   TFile *fGnt = new TFile(gPath, "read");
   TFile *fMu  = new TFile(uPath, "read");
   TFile *fOut = new TFile(oPath, "recreate");
@@ -67,13 +77,11 @@ void MatchJets(const TString gPath=gName, const TString uPath=uName, const TStri
 
 
   // declare Geant event leaves
-  cout << "  Setting branch addresses..." << endl;
+  cout << "    Setting branch addresses..." << endl;
   Int_t    gEventIndex    = 0;
   Int_t    gRunId         = 0;
   Int_t    gNJets         = 0;
-  Bool_t   gIsGoodRun     = 0;
-  Bool_t   gIsGoodEvent   = 0;
-  Bool_t   gIsGoodTrigger = 0;
+  Double_t gPartonicPt    = 0.;
   Double_t gRefmult       = 0.;
   Double_t gTSP           = 0.;
   Double_t gTrgEta        = 0.;
@@ -101,10 +109,7 @@ void MatchJets(const TString gPath=gName, const TString uPath=uName, const TStri
   Int_t    uEventIndex    = 0;
   Int_t    uRunId         = 0;
   Int_t    uNJets         = 0;
-  Bool_t   uIsGoodRun     = 0;
-  Bool_t   uIsGoodEvent   = 0;
-  Bool_t   uIsGoodTower   = 0;
-  Bool_t   uIsGoodTrigger = 0;
+  Double_t uPartonicPt    = 0.;
   Double_t uRefmult       = 0.;
   Double_t uTSP           = 0.;
   Double_t uTrgEta        = 0.;
@@ -134,9 +139,7 @@ void MatchJets(const TString gPath=gName, const TString uPath=uName, const TStri
   TBranch *bRunIdG         = 0;
   TBranch *bNJetsG         = 0;
   TBranch *bRefmultG       = 0;
-  TBranch *bIsGoodRunG     = 0;
-  TBranch *bIsGoodEventG   = 0;
-  TBranch *bIsGoodTriggerG = 0;
+  TBranch *bPartonicPtG    = 0;
   TBranch *bTspG           = 0;
   TBranch *bTrgEtaG        = 0;
   TBranch *bTrgPhiG        = 0;
@@ -161,10 +164,7 @@ void MatchJets(const TString gPath=gName, const TString uPath=uName, const TStri
   TBranch *bEventIndexU    = 0;
   TBranch *bRunIdU         = 0;
   TBranch *bNJetsU         = 0;
-  TBranch *bIsGoodRunU     = 0;
-  TBranch *bIsGoodEventU   = 0;
-  TBranch *bIsGoodTowerU   = 0;
-  TBranch *bIsGoodTriggerU = 0;
+  TBranch *bPartonicPtU    = 0;
   TBranch *bRefmultU       = 0;
   TBranch *bTspU           = 0;
   TBranch *bTrgEtaU        = 0;
@@ -192,9 +192,7 @@ void MatchJets(const TString gPath=gName, const TString uPath=uName, const TStri
   tGnt -> SetBranchAddress("RunId", &gRunId, &bRunIdG);
   tGnt -> SetBranchAddress("Refmult", &gRefmult, &bRefmultG);
   tGnt -> SetBranchAddress("NJets", &gNJets, &bNJetsG);
-  tGnt -> SetBranchAddress("IsGoodRun", &gIsGoodRun, &bIsGoodRunG);
-  tGnt -> SetBranchAddress("IsGoodEvent", &gIsGoodEvent, &bIsGoodEventG);
-  tGnt -> SetBranchAddress("IsGoodTrigger", &gIsGoodTrigger, &bIsGoodTriggerG);
+  tGnt -> SetBranchAddress("PartonicPt", &gPartonicPt, &bPartonicPtG);
   tGnt -> SetBranchAddress("TSP", &gTSP, &bTspG);
   tGnt -> SetBranchAddress("TrgEta", &gTrgEta, &bTrgEtaG);
   tGnt -> SetBranchAddress("TrgPhi", &gTrgPhi, &bTrgPhiG);
@@ -220,10 +218,7 @@ void MatchJets(const TString gPath=gName, const TString uPath=uName, const TStri
   tMu -> SetBranchAddress("RunId", &uRunId, &bRunIdU);
   tMu -> SetBranchAddress("Refmult", &uRefmult, &bRefmultU);
   tMu -> SetBranchAddress("NJets", &uNJets, &bNJetsU);
-  tMu -> SetBranchAddress("IsGoodRun", &uIsGoodRun, &bIsGoodRunU);
-  tMu -> SetBranchAddress("IsGoodEvent", &uIsGoodEvent, &bIsGoodEventU);
-  tMu -> SetBranchAddress("IsGoodTower", &uIsGoodTower, &bIsGoodTowerU);
-  tMu -> SetBranchAddress("IsGoodTrigger", &uIsGoodTrigger, &bIsGoodTriggerU);
+  tMu -> SetBranchAddress("PartonicPt", &uPartonicPt, &bPartonicPtU);
   tMu -> SetBranchAddress("TSP", &uTSP, &bTspU);
   tMu -> SetBranchAddress("TrgEta", &uTrgEta, &bTrgEtaU);
   tMu -> SetBranchAddress("TrgPhi", &uTrgPhi, &bTrgPhiU);
@@ -246,7 +241,7 @@ void MatchJets(const TString gPath=gName, const TString uPath=uName, const TStri
 
 
 
-  cout << "  Creating histograms..." << endl;
+  cout << "    Creating histograms..." << endl;
 
   const Int_t nJetTypes   = 7;
   const Int_t nMatchTypes = 5;
@@ -454,14 +449,15 @@ void MatchJets(const TString gPath=gName, const TString uPath=uName, const TStri
   }
 
 
-  // make sure both trees have the same no. of events
+  // check to make sure there are a reasonable no. of events
   Int_t fEvt  = 0;
   Int_t nEvts = 0;
   Int_t gEvts = (Int_t) tGnt -> GetEntries();
   Int_t uEvts = (Int_t) tMu  -> GetEntries();
-  if (gEvts != uEvts) {
-    cerr << "WARNING: Geant and MuDst files do NOT have the same no. of events!\n"
-         << "         nGeantEvt = " << gEvts << ", nMuDstEvt = " << uEvts
+  if (gEvts < uEvts) {
+    cerr << "WARNING: There are less particle-level events than detector-level!\n"
+         << "         Please double-check that everything is in order...\n"
+         << "         nParticle = " << gEvts << ", nDetector = " << uEvts
          << endl;
     if (gEvts > uEvts) fEvt = 1;
     if (gEvts < uEvts) fEvt = 2;
@@ -491,7 +487,7 @@ void MatchJets(const TString gPath=gName, const TString uPath=uName, const TStri
 
   // vector for matching
   vector<Int_t> matchIndices;
-  cout << "  Beginning event loop..." << endl;
+  cout << "    Beginning event loop..." << endl;
 
   // event loop
   Int_t nShift   = 0;
@@ -565,17 +561,27 @@ void MatchJets(const TString gPath=gName, const TString uPath=uName, const TStri
     nBytesG += gBytes;
     nBytesU += uBytes;
     if (!inBatchMode) {
-      cout << "    Processing event " << i+1 << "/" << nEvts << "...\r" << flush;
+      cout << "      Processing event " << i+1 << "/" << nEvts << "...\r" << flush;
       if (i+1 == nEvts) cout << endl;
     }
     else 
-      cout << "    Processing event " << i+1 << "/" << nEvts << "..." << endl;
+      cout << "      Processing event " << i+1 << "/" << nEvts << "..." << endl;
 
 
-    // trigger cut
-    const Bool_t isInPi0Cut = ((uTSP >= MinPi0Tsp) && (uTSP <= MaxPi0Tsp));
-    if (!isInPi0Cut) continue;
+    // trigger info
+    const Double_t vZtrg  = uVz;
+    const Double_t eTtrg  = uTrgEt;
+    const Double_t hTrg   = uTrgEta;
+    const Double_t tspTrg = TMath::Abs(uTSP);
+
+    // trigger cuts
+    const Bool_t isInVzCut  = (TMath::Abs(vZtrg) < MaxVz);
+    const Bool_t isInEtaCut = (TMath::Abs(hTrg) < MaxTrgEta);
+    const Bool_t isInEtCut  = ((eTtrg > MinTrgEt) && (eTtrg < MaxTrgEt));
+    const Bool_t isInTspCut = ((tspTrg >= MinTrgTsp) && (tspTrg <= MaxTrgTsp));
+    if (!isInVzCut || !isInEtaCut || !isInEtCut || !isInTspCut) continue;
     nTrig++;
+
 
     // Geant jet loop
     Int_t nHardG   = 0;
@@ -635,7 +641,6 @@ void MatchJets(const TString gPath=gName, const TString uPath=uName, const TStri
       Double_t bQt    = 0.;
       Double_t bS     = 0.;
       Double_t bDp    = 0.;
-      Double_t bDq    = 0.;
       Double_t bDr    = 999.;
 
       // MuDst jet loop
@@ -665,7 +670,6 @@ void MatchJets(const TString gPath=gName, const TString uPath=uName, const TStri
         Double_t qT = uPt / gPt;
         Double_t s  = uA / gA;
         Double_t dP = uPt - gPt;
-        Double_t dQ = dP / gPt;
         Double_t dH = uH - gH;
         Double_t dF = uF - gF;
         Double_t dR = sqrt(dH*dH + dF*dF);
@@ -742,7 +746,6 @@ void MatchJets(const TString gPath=gName, const TString uPath=uName, const TStri
           bQt    = qT;
           bS     = s;
           bDp    = dP;
-          bDq    = dQ;
           bDr    = dR;
         }
 
@@ -862,7 +865,6 @@ void MatchJets(const TString gPath=gName, const TString uPath=uName, const TStri
     hNumHardG   -> Fill(nHardG);
     hNumHardU   -> Fill(nHardU);
 
-
     matchIndices.clear();
 
   }  // end event loop
@@ -875,14 +877,14 @@ void MatchJets(const TString gPath=gName, const TString uPath=uName, const TStri
     assert(0);
   }
   else
-    cout << "  Event loop finished!\n"
-         << "    nFound = " << nFound << "\n"
-         << "    nTrig  = " << nTrig
+    cout << "    Event loop finished!\n"
+         << "      nFound = " << nFound << "\n"
+         << "      nTrig  = " << nTrig
          << endl;
 
 
   // calculate efficiency
-  cout << "  Calculating efficiency..." << endl;
+  cout << "    Calculating efficiency..." << endl;
   TH1D *hGeantA  = (TH1D*) hJetArea[0] -> Clone();
   TH1D *hMatchA  = (TH1D*) hJetArea[3] -> Clone();
   TH1D *hGeantPt = (TH1D*) hJetPt[0]   -> Clone();
@@ -891,7 +893,7 @@ void MatchJets(const TString gPath=gName, const TString uPath=uName, const TStri
   hEfficiencyPt -> Divide(hMatchPt, hGeantPt, 1., 1.);
 
 
-  cout << "  Normalizing histograms..." << endl;
+  cout << "    Normalizing histograms..." << endl;
 
   // bin widths
   const Double_t mBin   = (m2 - m1) / nM;
@@ -1047,7 +1049,7 @@ void MatchJets(const TString gPath=gName, const TString uPath=uName, const TStri
   fMu  -> Close();
 
 
-  cout << "Matching script finished!\n" << endl;
+  cout << "  Matching script finished!\n" << endl;
 
 }
 
