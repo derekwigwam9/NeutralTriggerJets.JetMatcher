@@ -18,8 +18,8 @@ using namespace std;
 
 // filepaths
 static const TString SOutDefault("test.root");
-static const TString SGntDefault("../JetMaker/mc/pp200r9pt35rff.particle.r03rm1chrg.root");
-static const TString SMuDefault("../JetMaker/mudst/pp200r9pt35rff.et920vz55had.r03rm1chrg.root");
+static const TString SParDefault("../JetMaker/mc/pp200r9pt35rff.particle.r03rm1chrg.root");
+static const TString SDetDefault("../JetMaker/mudst/pp200r9pt35rff.et920vz55had.r03rm1chrg.root");
 
 // jet parameters
 static const Double_t MinJetPt = 0.2;
@@ -28,7 +28,7 @@ static const Double_t Rcut     = 0.3;  // Rcut = Rjet
 
 
 
-void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, const TString oPath=SOutDefault, Bool_t inBatchMode=false) {
+void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault, const TString oPath=SOutDefault, Bool_t inBatchMode=false) {
 
   cout << "\n  Beginning match script!" << endl;
 
@@ -44,9 +44,9 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
   // matching constants
   const Double_t Qmin    = 0.15;  // fraction of jet pT must be above Qmin
   const Double_t Qmax    = 1.5;   // fraction of jet pT must be below Qmax
-  const Double_t HardCut = 10.;   // jets w/ pT>HardCut are considered 'hard'
-  const Double_t Gcut    = 0.;    // pTgnt must be above this
-  const Double_t Ucut    = 0.;    // pTmu must be above this
+  const Double_t HardCut = 10.;   // jets w/ pT > HardCut are considered 'hard'
+  const Double_t Pcut    = 0.;    // pTpar must be above this
+  const Double_t Dcut    = 0.;    // pTdet must be above this
 
   // misc. constants
   const Double_t pi  = TMath::Pi();
@@ -55,189 +55,189 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
 
 
   // open files
-  TFile *fGnt = new TFile(gPath, "read");
-  TFile *fMu  = new TFile(uPath, "read");
+  TFile *fPar = new TFile(pPath, "read");
+  TFile *fDet = new TFile(dPath, "read");
   TFile *fOut = new TFile(oPath, "recreate");
-  if (!fGnt) {
-    cerr << "PANIC: Geant input file could not be opened!" << endl;
-    assert(fGnt);
+  if (!fPar) {
+    cerr << "PANIC: particle input file could not be opened!" << endl;
+    assert(fPar);
   }
-  if (!fMu) {
-    cerr << "PANIC: MuDst input file could not be opened!" << endl;
-    assert(fMu);
+  if (!fDet) {
+    cerr << "PANIC: detector input file could not be opened!" << endl;
+    assert(fDet);
   }
 
   // get trees
-  TTree *tGnt;
-  TTree *tMu;
-  if (fGnt && fMu) {
-    fGnt -> GetObject("JetTree", tGnt);
-    fMu  -> GetObject("JetTree", tMu);
+  TTree *tPar;
+  TTree *tDet;
+  if (fPar && fDet) {
+    fPar -> GetObject("JetTree", tPar);
+    fDet -> GetObject("JetTree", tDet);
   }
 
 
-  // declare Geant event leaves
+  // declare particle event leaves
   cout << "    Setting branch addresses..." << endl;
-  Int_t    gEventIndex    = 0;
-  Int_t    gRunId         = 0;
-  Int_t    gNJets         = 0;
-  Double_t gPartonicPt    = 0.;
-  Double_t gRefmult       = 0.;
-  Double_t gTSP           = 0.;
-  Double_t gTrgEta        = 0.;
-  Double_t gTrgPhi        = 0.;
-  Double_t gTrgEt         = 0.;
-  Double_t gRho           = 0.;
-  Double_t gSigma         = 0.;
-  Double_t gVz            = 0.;
-  // declare Geant jet leaves
-  vector<Double_t> *gJetPt     = 0;
-  vector<Double_t> *gJetNCons  = 0;
-  vector<Double_t> *gJetIndex  = 0;
-  vector<Double_t> *gJetPtCorr = 0;
-  vector<Double_t> *gJetPhi    = 0;
-  vector<Double_t> *gJetEta    = 0;
-  vector<Double_t> *gJetE      = 0;
-  vector<Double_t> *gJetArea   = 0;
-  // declare Geant constituent leaves
-  vector<vector<Double_t> > *gJetConsPt  = 0;
-  vector<vector<Double_t> > *gJetConsEta = 0;
-  vector<vector<Double_t> > *gJetConsPhi = 0;
-  vector<vector<Double_t> > *gJetConsE   = 0;
+  Int_t    pEventIndex    = 0;
+  Int_t    pRunId         = 0;
+  Int_t    pNJets         = 0;
+  Double_t pPartonicPt    = 0.;
+  Double_t pRefmult       = 0.;
+  Double_t pTSP           = 0.;
+  Double_t pTrgEta        = 0.;
+  Double_t pTrgPhi        = 0.;
+  Double_t pTrgEt         = 0.;
+  Double_t pRho           = 0.;
+  Double_t pSigma         = 0.;
+  Double_t pVz            = 0.;
+  // declare particle jet leaves
+  vector<Double_t> *pJetPt     = 0;
+  vector<Double_t> *pJetNCons  = 0;
+  vector<Double_t> *pJetIndex  = 0;
+  vector<Double_t> *pJetPtCorr = 0;
+  vector<Double_t> *pJetPhi    = 0;
+  vector<Double_t> *pJetEta    = 0;
+  vector<Double_t> *pJetE      = 0;
+  vector<Double_t> *pJetArea   = 0;
+  // declare particle constituent leaves
+  vector<vector<Double_t> > *pJetConsPt  = 0;
+  vector<vector<Double_t> > *pJetConsEta = 0;
+  vector<vector<Double_t> > *pJetConsPhi = 0;
+  vector<vector<Double_t> > *pJetConsE   = 0;
   
-  // declare MuDst event leaves
-  Int_t    uEventIndex    = 0;
-  Int_t    uRunId         = 0;
-  Int_t    uNJets         = 0;
-  Double_t uPartonicPt    = 0.;
-  Double_t uRefmult       = 0.;
-  Double_t uTSP           = 0.;
-  Double_t uTrgEta        = 0.;
-  Double_t uTrgPhi        = 0.;
-  Double_t uTrgEt         = 0.;
-  Double_t uRho           = 0.;
-  Double_t uSigma         = 0.;
-  Double_t uVz            = 0.;
-  // declare MuDst jet leaves
-  vector<Double_t> *uJetPt     = 0;
-  vector<Double_t> *uJetNCons  = 0;
-  vector<Double_t> *uJetIndex  = 0;
-  vector<Double_t> *uJetPtCorr = 0;
-  vector<Double_t> *uJetEta    = 0;
-  vector<Double_t> *uJetPhi    = 0;
-  vector<Double_t> *uJetE      = 0;
-  vector<Double_t> *uJetArea   = 0;
-  // declare MuDst constituent leaves
-  vector<vector<Double_t> > *uJetConsPt  = 0;
-  vector<vector<Double_t> > *uJetConsEta = 0;
-  vector<vector<Double_t> > *uJetConsPhi = 0;
-  vector<vector<Double_t> > *uJetConsE   = 0;
+  // declare detector event leaves
+  Int_t    dEventIndex    = 0;
+  Int_t    dRunId         = 0;
+  Int_t    dNJets         = 0;
+  Double_t dPartonicPt    = 0.;
+  Double_t dRefmult       = 0.;
+  Double_t dTSP           = 0.;
+  Double_t dTrgEta        = 0.;
+  Double_t dTrgPhi        = 0.;
+  Double_t dTrgEt         = 0.;
+  Double_t dRho           = 0.;
+  Double_t dSigma         = 0.;
+  Double_t dVz            = 0.;
+  // declare detector jet leaves
+  vector<Double_t> *dJetPt     = 0;
+  vector<Double_t> *dJetNCons  = 0;
+  vector<Double_t> *dJetIndex  = 0;
+  vector<Double_t> *dJetPtCorr = 0;
+  vector<Double_t> *dJetEta    = 0;
+  vector<Double_t> *dJetPhi    = 0;
+  vector<Double_t> *dJetE      = 0;
+  vector<Double_t> *dJetArea   = 0;
+  // declare detector constituent leaves
+  vector<vector<Double_t> > *dJetConsPt  = 0;
+  vector<vector<Double_t> > *dJetConsEta = 0;
+  vector<vector<Double_t> > *dJetConsPhi = 0;
+  vector<vector<Double_t> > *dJetConsE   = 0;
 
 
-  // declare Geant branches
-  TBranch *bEventIndexG    = 0;
-  TBranch *bRunIdG         = 0;
-  TBranch *bNJetsG         = 0;
-  TBranch *bRefmultG       = 0;
-  TBranch *bPartonicPtG    = 0;
-  TBranch *bTspG           = 0;
-  TBranch *bTrgEtaG        = 0;
-  TBranch *bTrgPhiG        = 0;
-  TBranch *bTrgEtG         = 0;
-  TBranch *bRhoG           = 0;
-  TBranch *bSigmaG         = 0;
-  TBranch *bVzG            = 0;
-  TBranch *bJetPtG         = 0;
-  TBranch *bJetNConsG      = 0;
-  TBranch *bJetIndexG      = 0;
-  TBranch *bJetPtCorrG     = 0;
-  TBranch *bJetEtaG        = 0;
-  TBranch *bJetPhiG        = 0;
-  TBranch *bJetEG          = 0;
-  TBranch *bJetAreaG       = 0;
-  TBranch *bJetConsPtG     = 0;
-  TBranch *bJetConsEtaG    = 0;
-  TBranch *bJetConsPhiG    = 0;
-  TBranch *bJetConsEG      = 0;
+  // declare particle branches
+  TBranch *bEventIndexP    = 0;
+  TBranch *bRunIdP         = 0;
+  TBranch *bNJetsP         = 0;
+  TBranch *bRefmultP       = 0;
+  TBranch *bPartonicPtP    = 0;
+  TBranch *bTspP           = 0;
+  TBranch *bTrgEtaP        = 0;
+  TBranch *bTrgPhiP        = 0;
+  TBranch *bTrgEtP         = 0;
+  TBranch *bRhoP           = 0;
+  TBranch *bSigmaP         = 0;
+  TBranch *bVzP            = 0;
+  TBranch *bJetPtP         = 0;
+  TBranch *bJetNConsP      = 0;
+  TBranch *bJetIndexP      = 0;
+  TBranch *bJetPtCorrP     = 0;
+  TBranch *bJetEtaP        = 0;
+  TBranch *bJetPhiP        = 0;
+  TBranch *bJetEP          = 0;
+  TBranch *bJetAreaP       = 0;
+  TBranch *bJetConsPtP     = 0;
+  TBranch *bJetConsEtaP    = 0;
+  TBranch *bJetConsPhiP    = 0;
+  TBranch *bJetConsEP      = 0;
 
-  // declare MuDst branches
-  TBranch *bEventIndexU    = 0;
-  TBranch *bRunIdU         = 0;
-  TBranch *bNJetsU         = 0;
-  TBranch *bPartonicPtU    = 0;
-  TBranch *bRefmultU       = 0;
-  TBranch *bTspU           = 0;
-  TBranch *bTrgEtaU        = 0;
-  TBranch *bTrgPhiU        = 0;
-  TBranch *bTrgEtU         = 0;
-  TBranch *bRhoU           = 0;
-  TBranch *bSigmaU         = 0;
-  TBranch *bVzU            = 0;
-  TBranch *bJetPtU         = 0;
-  TBranch *bJetNConsU      = 0;
-  TBranch *bJetIndexU      = 0;
-  TBranch *bJetPtCorrU     = 0;
-  TBranch *bJetEtaU        = 0;
-  TBranch *bJetPhiU        = 0;
-  TBranch *bJetEU          = 0;
-  TBranch *bJetAreaU       = 0;
-  TBranch *bJetConsPtU     = 0;
-  TBranch *bJetConsEtaU    = 0;
-  TBranch *bJetConsPhiU    = 0;
-  TBranch *bJetConsEU      = 0;
+  // declare detector branches
+  TBranch *bEventIndexD    = 0;
+  TBranch *bRunIdD         = 0;
+  TBranch *bNJetsD         = 0;
+  TBranch *bPartonicPtD    = 0;
+  TBranch *bRefmultD       = 0;
+  TBranch *bTspD           = 0;
+  TBranch *bTrgEtaD        = 0;
+  TBranch *bTrgPhiD        = 0;
+  TBranch *bTrgEtD         = 0;
+  TBranch *bRhoD           = 0;
+  TBranch *bSigmaD         = 0;
+  TBranch *bVzD            = 0;
+  TBranch *bJetPtD         = 0;
+  TBranch *bJetNConsD      = 0;
+  TBranch *bJetIndexD      = 0;
+  TBranch *bJetPtCorrD     = 0;
+  TBranch *bJetEtaD        = 0;
+  TBranch *bJetPhiD        = 0;
+  TBranch *bJetED          = 0;
+  TBranch *bJetAreaD       = 0;
+  TBranch *bJetConsPtD     = 0;
+  TBranch *bJetConsEtaD    = 0;
+  TBranch *bJetConsPhiD    = 0;
+  TBranch *bJetConsED      = 0;
 
 
-  // set Geant branches
-  tGnt -> SetBranchAddress("eventIndex", &gEventIndex, &bEventIndexG);
-  tGnt -> SetBranchAddress("RunId", &gRunId, &bRunIdG);
-  tGnt -> SetBranchAddress("Refmult", &gRefmult, &bRefmultG);
-  tGnt -> SetBranchAddress("NJets", &gNJets, &bNJetsG);
-  tGnt -> SetBranchAddress("PartonicPt", &gPartonicPt, &bPartonicPtG);
-  tGnt -> SetBranchAddress("TSP", &gTSP, &bTspG);
-  tGnt -> SetBranchAddress("TrgEta", &gTrgEta, &bTrgEtaG);
-  tGnt -> SetBranchAddress("TrgPhi", &gTrgPhi, &bTrgPhiG);
-  tGnt -> SetBranchAddress("TrgEt", &gTrgEt, &bTrgEtG);
-  tGnt -> SetBranchAddress("Rho", &gRho, &bRhoG);
-  tGnt -> SetBranchAddress("Sigma", &gSigma, &bSigmaG);
-  tGnt -> SetBranchAddress("Vz", &gVz,&bVzG);
-  tGnt -> SetBranchAddress("JetIndex", &gJetIndex, &bJetIndexG);
-  tGnt -> SetBranchAddress("JetPt", &gJetPt, &bJetPtG);
-  tGnt -> SetBranchAddress("JetNCons", &gJetNCons, &bJetNConsG);
-  tGnt -> SetBranchAddress("JetPtCorr", &gJetPtCorr, &bJetPtCorrG);
-  tGnt -> SetBranchAddress("JetEta", &gJetEta, &bJetEtaG);
-  tGnt -> SetBranchAddress("JetPhi",&gJetPhi, &bJetPhiG); 
-  tGnt -> SetBranchAddress("JetE", &gJetE, &bJetEG); 
-  tGnt -> SetBranchAddress("JetArea",&gJetArea, &bJetAreaG);
-  tGnt -> SetBranchAddress("JetConsPt", &gJetConsPt, &bJetConsPtG);
-  tGnt -> SetBranchAddress("JetConsEta", &gJetConsEta, &bJetConsEtaG);
-  tGnt -> SetBranchAddress("JetConsPhi", &gJetConsPhi, &bJetConsPhiG);
-  tGnt -> SetBranchAddress("JetConsE", &gJetConsE, &bJetConsEG);
+  // set particle branches
+  tPar -> SetBranchAddress("eventIndex", &pEventIndex, &bEventIndexP);
+  tPar -> SetBranchAddress("RunId", &pRunId, &bRunIdP);
+  tPar -> SetBranchAddress("Refmult", &pRefmult, &bRefmultP);
+  tPar -> SetBranchAddress("NJets", &pNJets, &bNJetsP);
+  tPar -> SetBranchAddress("PartonicPt", &pPartonicPt, &bPartonicPtP);
+  tPar -> SetBranchAddress("TSP", &pTSP, &bTspP);
+  tPar -> SetBranchAddress("TrgEta", &pTrgEta, &bTrgEtaP);
+  tPar -> SetBranchAddress("TrgPhi", &pTrgPhi, &bTrgPhiP);
+  tPar -> SetBranchAddress("TrgEt", &pTrgEt, &bTrgEtP);
+  tPar -> SetBranchAddress("Rho", &pRho, &bRhoP);
+  tPar -> SetBranchAddress("Sigma", &pSigma, &bSigmaP);
+  tPar -> SetBranchAddress("Vz", &pVz,&bVzP);
+  tPar -> SetBranchAddress("JetIndex", &pJetIndex, &bJetIndexP);
+  tPar -> SetBranchAddress("JetPt", &pJetPt, &bJetPtP);
+  tPar -> SetBranchAddress("JetNCons", &pJetNCons, &bJetNConsP);
+  tPar -> SetBranchAddress("JetPtCorr", &pJetPtCorr, &bJetPtCorrP);
+  tPar -> SetBranchAddress("JetEta", &pJetEta, &bJetEtaP);
+  tPar -> SetBranchAddress("JetPhi",&pJetPhi, &bJetPhiP); 
+  tPar -> SetBranchAddress("JetE", &pJetE, &bJetEP); 
+  tPar -> SetBranchAddress("JetArea",&pJetArea, &bJetAreaP);
+  tPar -> SetBranchAddress("JetConsPt", &pJetConsPt, &bJetConsPtP);
+  tPar -> SetBranchAddress("JetConsEta", &pJetConsEta, &bJetConsEtaP);
+  tPar -> SetBranchAddress("JetConsPhi", &pJetConsPhi, &bJetConsPhiP);
+  tPar -> SetBranchAddress("JetConsE", &pJetConsE, &bJetConsEP);
 
-  // set MuDst branches
-  tMu -> SetBranchAddress("eventIndex", &uEventIndex, &bEventIndexU);
-  tMu -> SetBranchAddress("RunId", &uRunId, &bRunIdU);
-  tMu -> SetBranchAddress("Refmult", &uRefmult, &bRefmultU);
-  tMu -> SetBranchAddress("NJets", &uNJets, &bNJetsU);
-  tMu -> SetBranchAddress("PartonicPt", &uPartonicPt, &bPartonicPtU);
-  tMu -> SetBranchAddress("TSP", &uTSP, &bTspU);
-  tMu -> SetBranchAddress("TrgEta", &uTrgEta, &bTrgEtaU);
-  tMu -> SetBranchAddress("TrgPhi", &uTrgPhi, &bTrgPhiU);
-  tMu -> SetBranchAddress("TrgEt", &uTrgEt, &bTrgEtU);
-  tMu -> SetBranchAddress("Rho", &uRho, &bRhoU);
-  tMu -> SetBranchAddress("Sigma", &uSigma, &bSigmaU);
-  tMu -> SetBranchAddress("Vz", &uVz, &bVzU);
-  tMu -> SetBranchAddress("JetIndex", &uJetIndex, &bJetIndexU);
-  tMu -> SetBranchAddress("JetPt", &uJetPt, &bJetPtU);
-  tMu -> SetBranchAddress("JetNCons", &uJetNCons, &bJetNConsU);
-  tMu -> SetBranchAddress("JetPtCorr", &uJetPtCorr, &bJetPtCorrU);
-  tMu -> SetBranchAddress("JetEta", &uJetEta, &bJetEtaU);
-  tMu -> SetBranchAddress("JetPhi",&uJetPhi, &bJetPhiU); 
-  tMu -> SetBranchAddress("JetE", &uJetE, &bJetEU); 
-  tMu -> SetBranchAddress("JetArea",&uJetArea, &bJetAreaU);
-  tMu -> SetBranchAddress("JetConsPt", &uJetConsPt, &bJetConsPtU);
-  tMu -> SetBranchAddress("JetConsEta", &uJetConsEta, &bJetConsEtaU);
-  tMu -> SetBranchAddress("JetConsPhi", &uJetConsPhi, &bJetConsPhiU);
-  tMu -> SetBranchAddress("JetConsE", &uJetConsE, &bJetConsEU);
+  // set detector branches
+  tDet -> SetBranchAddress("eventIndex", &dEventIndex, &bEventIndexD);
+  tDet -> SetBranchAddress("RunId", &dRunId, &bRunIdD);
+  tDet -> SetBranchAddress("Refmult", &dRefmult, &bRefmultD);
+  tDet -> SetBranchAddress("NJets", &dNJets, &bNJetsD);
+  tDet -> SetBranchAddress("PartonicPt", &dPartonicPt, &bPartonicPtD);
+  tDet -> SetBranchAddress("TSP", &dTSP, &bTspD);
+  tDet -> SetBranchAddress("TrgEta", &dTrgEta, &bTrgEtaD);
+  tDet -> SetBranchAddress("TrgPhi", &dTrgPhi, &bTrgPhiD);
+  tDet -> SetBranchAddress("TrgEt", &dTrgEt, &bTrgEtD);
+  tDet -> SetBranchAddress("Rho", &dRho, &bRhoD);
+  tDet -> SetBranchAddress("Sigma", &dSigma, &bSigmaD);
+  tDet -> SetBranchAddress("Vz", &dVz, &bVzD);
+  tDet -> SetBranchAddress("JetIndex", &dJetIndex, &bJetIndexD);
+  tDet -> SetBranchAddress("JetPt", &dJetPt, &bJetPtD);
+  tDet -> SetBranchAddress("JetNCons", &dJetNCons, &bJetNConsD);
+  tDet -> SetBranchAddress("JetPtCorr", &dJetPtCorr, &bJetPtCorrD);
+  tDet -> SetBranchAddress("JetEta", &dJetEta, &bJetEtaD);
+  tDet -> SetBranchAddress("JetPhi",&dJetPhi, &bJetPhiD); 
+  tDet -> SetBranchAddress("JetE", &dJetE, &bJetED); 
+  tDet -> SetBranchAddress("JetArea",&dJetArea, &bJetAreaD);
+  tDet -> SetBranchAddress("JetConsPt", &dJetConsPt, &bJetConsPtD);
+  tDet -> SetBranchAddress("JetConsEta", &dJetConsEta, &bJetConsEtaD);
+  tDet -> SetBranchAddress("JetConsPhi", &dJetConsPhi, &bJetConsPhiD);
+  tDet -> SetBranchAddress("JetConsE", &dJetConsE, &bJetConsED);
 
 
 
@@ -254,26 +254,26 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
   TH2D *hResponsePtc;
   TH2D *hResponsePtcN;
   // event histograms
-  TH1D *hRefmultG;
-  TH1D *hRefmultU;
-  TH1D *hNumJetsG;
-  TH1D *hNumJetsU;
+  TH1D *hRefmultP;
+  TH1D *hRefmultD;
+  TH1D *hNumJetsP;
+  TH1D *hNumJetsD;
   TH1D *hNumToMatch;
   TH1D *hNumMatched;
-  TH1D *hNumHardG;
-  TH1D *hNumHardU;
-  TH1D *hGeantArea;
-  TH1D *hMatchArea;
-  TH1D *hGeantPtCorr;
-  TH1D *hMatchPtCorr;
-  // jet histograms  [0='G',1='U',2='C',3='M',4='J',5='Y',6='N']
+  TH1D *hNumHardP;
+  TH1D *hNumHardD;
+  TH1D *hParArea;
+  TH1D *hDetArea;
+  TH1D *hParPtCorr;
+  TH1D *hDetPtCorr;
+  // jet histograms  [0='P',1='D',2='C',3='M',4='J',5='Y',6='N']
   TH1D *hJetArea[nJetTypes];
   TH1D *hJetEta[nJetTypes];
   TH1D *hJetPhi[nJetTypes];
   TH1D *hJetPt[nJetTypes];
   TH1D *hJetPtCorr[nJetTypes];
   TH2D *hJetPhiVsEta[nJetTypes];
-  // matching histograms [0='U',1='C',2='M',3='J',4='Y']
+  // matching histograms [0='P',1='D',2='M',3='J',4='Y']
   TH1D *hJetQt[nMatchTypes];
   TH1D *hJetDr[nMatchTypes];
   TH1D *hJetS[nMatchTypes];
@@ -312,47 +312,47 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
   const Double_t s2 = 3.;
   const Double_t d1 = -50.;
   const Double_t d2 = 50.;
-  hEfficiencyA    = new TH1D("hEfficiencyA", "Efficiency, #epsilon(A_{jet}) = N_{match}(A_{jet})/N_{geant}(A_{jet})", nA, a1, a2);
-  hEfficiencyPt   = new TH1D("hEfficiencyPt", "Efficiency, #epsilon(p_{T}^{jet}) = N_{match}(p_{T}^{jet})/N_{geant}(p_{T}^{jet})", nP, p1, p2);
-  hResponseA      = new TH2D("hResponseA", "Response matrix, jet area; match; geant", nA, a1, a2, nA, a1, a2);
-  hResponseAn     = new TH2D("hResponseAn", "Response matrix, jet area (normalized); match; geant", nA, a1, a2, nA, a1, a2);
-  hResponsePt     = new TH2D("hResponsePt", "Response matrix, jet p_{T}; match; geant", nP, p1, p2, nP, p1, p2);
-  hResponsePtN    = new TH2D("hResponsePtN", "Response matrix, jet p_{T} (normalized); match; geant", nP, p1, p2, nP, p1, p2);
-  hResponsePtc    = new TH2D("hResponsePtc", "Response matrix, jet p_{T}^{corr}; match; geant", nP, p1, p2, nP, p1, p2);
-  hResponsePtcN   = new TH2D("hResponsePtcN", "Response matrix, jet p_{T}^{corr} (normalized); match; geant", nP, p1, p2, nP, p1, p2);
+  hEfficiencyA    = new TH1D("hEfficiencyA", "Efficiency, #epsilon(A_{jet}) = N_{det}(A_{jet})/N_{par}(A_{jet})", nA, a1, a2);
+  hEfficiencyPt   = new TH1D("hEfficiencyPt", "Efficiency, #epsilon(p_{T}^{jet}) = N_{det}(p_{T}^{jet})/N_{par}(p_{T}^{jet})", nP, p1, p2);
+  hResponseA      = new TH2D("hResponseA", "Response matrix, jet area; detector; particle", nA, a1, a2, nA, a1, a2);
+  hResponseAn     = new TH2D("hResponseAn", "Response matrix, jet area (normalized); detector; particle", nA, a1, a2, nA, a1, a2);
+  hResponsePt     = new TH2D("hResponsePt", "Response matrix, jet p_{T}; detector; particle", nP, p1, p2, nP, p1, p2);
+  hResponsePtN    = new TH2D("hResponsePtN", "Response matrix, jet p_{T} (normalized); detector; particle", nP, p1, p2, nP, p1, p2);
+  hResponsePtc    = new TH2D("hResponsePtc", "Response matrix, jet p_{T}^{corr}; detector; particle", nP, p1, p2, nP, p1, p2);
+  hResponsePtcN   = new TH2D("hResponsePtcN", "Response matrix, jet p_{T}^{corr} (normalized); detector; particle", nP, p1, p2, nP, p1, p2);
   // event histograms
-  hRefmultG       = new TH1D("hRefmultG", "Geant Refmult", nM, m1, m2);
-  hRefmultU       = new TH1D("hRefmultU", "MuDst Refmult", nM, m1, m2);
-  hNumJetsG       = new TH1D("hNumJetsG", "no. of jets, Geant", nN, n1, n2);
-  hNumJetsU       = new TH1D("hNumJetsU", "No. of jets, MuDst", nN, n1, n2);
+  hRefmultP       = new TH1D("hRefmultP", "Particle Refmult", nM, m1, m2);
+  hRefmultD       = new TH1D("hRefmultD", "Detector Refmult", nM, m1, m2);
+  hNumJetsP       = new TH1D("hNumJetsP", "no. of jets, particle", nN, n1, n2);
+  hNumJetsD       = new TH1D("hNumJetsD", "No. of jets, detector", nN, n1, n2);
   hNumToMatch     = new TH1D("hNumToMatch", "No. of jets to match (ie. no. of jets w/ pT > pTcut)", nN, n1, n2);
   hNumMatched     = new TH1D("hNumMatched", "No. of jets matched", nN, n1, n2);
-  hNumHardG       = new TH1D("hNumHardG", "No. of jets w/ p_{T} above a threshold, Geant", nN, n1, n2);
-  hNumHardU       = new TH1D("hNumHardU", "No. of jets w/ p_{T} above a threshold, MuDst", nN, n1, n2);
-  hGeantArea      = new TH1D("hGeantArea", "Total no. of jets to match per A_{jet} bin (for efficiency)", nA, a1, a2);
-  hMatchArea      = new TH1D("hMatchArea", "Total no. of jets matched per A_{jet} bin (for efficiency)", nA, a1, a2);
-  hGeantPtCorr    = new TH1D("hGeantPtCorr", "Total no. of jets to match per p_{T}^{corr} bin (for efficiency)", nP, p1, p2);
-  hMatchPtCorr    = new TH1D("hMatchPtCorr", "Total no. of jets matched per p_{T}^{corr} bin (for efficiency)", nP, p1, p2);
-  // geant jets
-  hJetArea[0]     = new TH1D("hJetAreaG", "Jet area, Geant", nA, a1, a2);
-  hJetEta[0]      = new TH1D("hJetEtaG", "Jet eta, Geant", nH, h1, h2);
-  hJetPhi[0]      = new TH1D("hJetPhiG", "Jet phi, Geant", nF, f1, f2);
-  hJetPt[0]       = new TH1D("hJetPtG", "Jet p_{T}, Geant", nP, p1, p2);
-  hJetPtCorr[0]   = new TH1D("hJetPtCorrG", "Jet p_{T}^{corr}, Geant", nP, p1, p2);
-  hJetPhiVsEta[0] = new TH2D("hJetPhiVsEtaG", "Jet #varphi vs. #eta, Geant", nH, h1, h2, nF, f1, f2);
-  // mudst jets
-  hJetArea[1]     = new TH1D("hJetAreaU", "Jet area, MuDst", nA, a1, a2);
-  hJetEta[1]      = new TH1D("hJetEtaU", "Jet eta, MuDst", nH, h1, h2);
-  hJetPhi[1]      = new TH1D("hJetPhiU", "Jet phi, MuDst", nF, f1, f2);
-  hJetPt[1]       = new TH1D("hJetPtU", "Jet p_{T}, MuDst", nP, p1, p2);
-  hJetPtCorr[1]   = new TH1D("hJetPtCorrU", "Jet p_{T}^{corr}, MuDst", nP, p1, p2);
-  hJetPhiVsEta[1] = new TH2D("hJetPhiVsEtaU", "Jet #varphi vs. #eta, MuDst", nH, h1, h2, nF, f1, f2);
-  hJetQt[0]       = new TH1D("hJetQtU", "Jet q_{T}, MuDst (normalization different!)", nQ, q1, q2);
-  hJetDr[0]       = new TH1D("hJetDrU", "Jet #Deltar, MuDst (normalization different!)", nR, r1, r2);
-  hJetS[0]        = new TH1D("hJetSu", "Jet s=A_{#mu}/A_{geant}, MuDst (normalization different!)", nS, s1, s2);
-  hJetDp[0]       = new TH1D("hJetDpU", "Jet #Deltap_{T}=p_{T}^{#mu}-p_{T}^{geant}, MuDst (normalization different!)", nD, d1, d2);
-  hJetQtVsDr[0]   = new TH2D("hJetQtVsDrU", "Jet q_{T} vs. #Deltar, MuDst (normalization different!); #Deltar; q_{T}", nR, r1, r2, nQ, q1, q2);
-  hJetSvsDr[0]    = new TH2D("hJetSvsDrU", "Jet s vs. #Deltar, MuDst (normalization different!); #Deltar; s", nR, r1, r2, nS, s1, s2);
+  hNumHardP       = new TH1D("hNumHardP", "No. of jets w/ p_{T} above a threshold, particle", nN, n1, n2);
+  hNumHardD       = new TH1D("hNumHardD", "No. of jets w/ p_{T} above a threshold, detector", nN, n1, n2);
+  hParArea        = new TH1D("hParArea", "Total no. of jets to match per A_{jet} bin (for efficiency)", nA, a1, a2);
+  hDetArea        = new TH1D("hDetArea", "Total no. of jets matched per A_{jet} bin (for efficiency, no smearing)", nA, a1, a2);
+  hParPtCorr      = new TH1D("hParPtCorr", "Total no. of jets to match per p_{T}^{corr} bin (for efficiency)", nP, p1, p2);
+  hDetPtCorr      = new TH1D("hDetPtCorr", "Total no. of jets matched per p_{T}^{corr} bin (for efficiency, no smearing)", nP, p1, p2);
+  // particle jets
+  hJetArea[0]     = new TH1D("hJetAreaP", "Jet area, particle", nA, a1, a2);
+  hJetEta[0]      = new TH1D("hJetEtaP", "Jet eta, particle", nH, h1, h2);
+  hJetPhi[0]      = new TH1D("hJetPhiP", "Jet phi, particle", nF, f1, f2);
+  hJetPt[0]       = new TH1D("hJetPtP", "Jet p_{T}, particle", nP, p1, p2);
+  hJetPtCorr[0]   = new TH1D("hJetPtCorrP", "Jet p_{T}^{corr}, particle", nP, p1, p2);
+  hJetPhiVsEta[0] = new TH2D("hJetPhiVsEtaP", "Jet #varphi vs. #eta, particle", nH, h1, h2, nF, f1, f2);
+  // detector jets
+  hJetArea[1]     = new TH1D("hJetAreaD", "Jet area, detector", nA, a1, a2);
+  hJetEta[1]      = new TH1D("hJetEtaD", "Jet eta, detector", nH, h1, h2);
+  hJetPhi[1]      = new TH1D("hJetPhiD", "Jet phi, detector", nF, f1, f2);
+  hJetPt[1]       = new TH1D("hJetPtD", "Jet p_{T}, detector", nP, p1, p2);
+  hJetPtCorr[1]   = new TH1D("hJetPtCorrD", "Jet p_{T}^{corr}, detector", nP, p1, p2);
+  hJetPhiVsEta[1] = new TH2D("hJetPhiVsEtaD", "Jet #varphi vs. #eta, detector", nH, h1, h2, nF, f1, f2);
+  hJetQt[0]       = new TH1D("hJetQtD", "Jet q_{T}, detector (normalization different!)", nQ, q1, q2);
+  hJetDr[0]       = new TH1D("hJetDrD", "Jet #Deltar, detector (normalization different!)", nR, r1, r2);
+  hJetS[0]        = new TH1D("hJetSd", "Jet s=A_{det}/A_{par}, detector (normalization different!)", nS, s1, s2);
+  hJetDp[0]       = new TH1D("hJetDpD", "Jet #Deltap_{T}=p_{T}^{det}-p_{T}^{par}, detector (normalization different!)", nD, d1, d2);
+  hJetQtVsDr[0]   = new TH2D("hJetQtVsDrD", "Jet q_{T} vs. #Deltar, detector (normalization different!); #Deltar; q_{T}", nR, r1, r2, nQ, q1, q2);
+  hJetSvsDr[0]    = new TH2D("hJetSvsDrD", "Jet s vs. #Deltar, detector (normalization different!); #Deltar; s", nR, r1, r2, nS, s1, s2);
   // candidate matches
   hJetArea[2]     = new TH1D("hJetAreaC", "Jet area, candidates", nA, a1, a2);
   hJetEta[2]      = new TH1D("hJetEtaC", "Jet eta, candidates", nH, h1, h2);
@@ -362,8 +362,8 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
   hJetPhiVsEta[2] = new TH2D("hJetPhiVsEtaC", "Jet #varphi vs. #eta, candidates", nH, h1, h2, nF, f1, f2);
   hJetQt[1]       = new TH1D("hJetQtC", "Jet q_{T}, candidates", nQ, q1, q2);
   hJetDr[1]       = new TH1D("hJetDrC", "Jet #Deltar, candidates", nR, r1, r2);
-  hJetS[1]        = new TH1D("hJetSc", "Jet s=A_{cand.}/A_{geant}, candidates", nS, s1, s2);
-  hJetDp[1]       = new TH1D("hJetDpC", "Jet #Deltap_{T}=p_{T}^{cand.}-p_{T}^{geant}, candidates (normalization different!)", nD, d1, d2);
+  hJetS[1]        = new TH1D("hJetSc", "Jet s=A_{cand}/A_{par}, candidates", nS, s1, s2);
+  hJetDp[1]       = new TH1D("hJetDpC", "Jet #Deltap_{T}=p_{T}^{cand}-p_{T}^{par}, candidates (normalization different!)", nD, d1, d2);
   hJetQtVsDr[1]   = new TH2D("hJetQtVsDrC", "Jet q_{T} vs. #Deltar, candidates; #Deltar; q_{T}", nR, r1, r2, nQ, q1, q2);
   hJetSvsDr[1]    = new TH2D("hJetSvsDrC", "Jet s vs. #Deltar, candidates; #Deltar; s", nR, r1, r2, nS, s1, s2);
   // matches
@@ -375,11 +375,11 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
   hJetPhiVsEta[3] = new TH2D("hJetPhiVsEtaM", "Jet #varphi vs. #eta, matches", nH, h1, h2, nF, f1, f2);
   hJetQt[2]       = new TH1D("hJetQtM", "Jet q_{T}, matches", nQ, q1, q2);
   hJetDr[2]       = new TH1D("hJetDrM", "Jet #Deltar, matches", nR, r1, r2);
-  hJetS[2]        = new TH1D("hJetSm", "Jet s=A_{match}/A_{geant}, matches", nS, s1, s2);
-  hJetDp[2]       = new TH1D("hJetDpM", "Jet #Deltap_{T}=p_{T}^{match}-p_{T}^{geant}, matches (normalization different!)", nD, d1, d2);
+  hJetS[2]        = new TH1D("hJetSm", "Jet s=A_{match}/A_{par}, matches", nS, s1, s2);
+  hJetDp[2]       = new TH1D("hJetDpM", "Jet #Deltap_{T}=p_{T}^{match}-p_{T}^{par}, matches (normalization different!)", nD, d1, d2);
   hJetQtVsDr[2]   = new TH2D("hJetQtVsDrM", "Jet q_{T} vs. #Deltar, matches", nR, r1, r2, nQ, q1, q2);
   hJetSvsDr[2]    = new TH2D("hJetSvsDrM", "Jet s vs. #Deltar, matches", nR, r1, r2, nS, s1, s2);
-  // junk (mudst jets that weren't matched)
+  // junk (detector jets that weren't matched)
   hJetArea[4]     = new TH1D("hJetAreaJ", "Jet area, junk", nA, a1, a2);
   hJetEta[4]      = new TH1D("hJetEtaJ", "Jet eta, junk", nH, h1, h2);
   hJetPhi[4]      = new TH1D("hJetPhiJ", "Jet phi, junk", nF, f1, f2);
@@ -388,8 +388,8 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
   hJetPhiVsEta[4] = new TH2D("hJetPhiVsEtaJ", "Jet #varphi vs. #eta, junk", nH, h1, h2, nF, f1, f2);
   hJetQt[3]       = new TH1D("hJetQtJ", "Jet q_{T}, junk (normalization different!)", nQ, q1, q2);
   hJetDr[3]       = new TH1D("hJetDrJ", "Jet #Deltar, junk (normalization different!)", nR, r1, r2);
-  hJetS[3]        = new TH1D("hJetSj", "Jet s=A_{junk}/A_{geant}, junk (normalization different!)", nS, s1, s2);
-  hJetDp[3]       = new TH1D("hJetDpJ", "Jet #Deltap_{T}=p_{T}^{junk}-p_{T}^{geant}, junk (normalization different!)", nD, d1, d2);
+  hJetS[3]        = new TH1D("hJetSj", "Jet s=A_{junk}/A_{par}, junk (normalization different!)", nS, s1, s2);
+  hJetDp[3]       = new TH1D("hJetDpJ", "Jet #Deltap_{T}=p_{T}^{junk}-p_{T}^{par}, junk (normalization different!)", nD, d1, d2);
   hJetQtVsDr[3]   = new TH2D("hJetQtVsDrJ", "Jet q_{T} vs. #Deltar, junk (normalization different!)", nR, r1, r2, nQ, q1, q2);
   hJetSvsDr[3]    = new TH2D("hJetSvsDrJ", "Jet s vs. #Deltar, junk (normalization different!)", nR, r1, r2, nS, s1, s2);
   // mystery (jets w/ dR > Rjet and |qT-1|<.1)
@@ -401,17 +401,17 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
   hJetPhiVsEta[5] = new TH2D("hJetPhiVsEtaY", "Jet #varphi vs. #eta, mystery", nH, h1, h2, nF, f1, f2);
   hJetQt[4]       = new TH1D("hJetQtY", "Jet q_{T}, mystery", nQ, q1, q2);
   hJetDr[4]       = new TH1D("hJetDrY", "Jet #Deltar, mystery", nR, r1, r2);
-  hJetS[4]        = new TH1D("hJetSy", "Jet s=A_{?}/A_{geant}, mystery", nS, s1, s2);
-  hJetDp[4]       = new TH1D("hJetDpY", "Jet #Deltap_{T}=p_{T}^{?}-p_{T}^{geant}, mystery (normalization different!)", nD, d1, d2);
+  hJetS[4]        = new TH1D("hJetSy", "Jet s=A_{?}/A_{par}, mystery", nS, s1, s2);
+  hJetDp[4]       = new TH1D("hJetDpY", "Jet #Deltap_{T}=p_{T}^{?}-p_{T}^{par}, mystery (normalization different!)", nD, d1, d2);
   hJetQtVsDr[4]   = new TH2D("hJetQtVsDrY", "Jet q_{T} vs. #Deltar, mystery", nR, r1, r2, nQ, q1, q2);
   hJetSvsDr[4]    = new TH2D("hJetSvsDrY", "Jet s vs. #Deltar, mystery", nR, r1, r2, nS, s1, s2);
-  // not matches (geant jets that weren't matched)
-  hJetArea[6]     = new TH1D("hJetAreaN", "Jet area, (geant) not matches", nA, a1, a2);
-  hJetEta[6]      = new TH1D("hJetEtaN", "Jet eta, (geant) not matches", nH, h1, h2);
-  hJetPhi[6]      = new TH1D("hJetPhiN", "Jet phi, (geant) not matches", nF, f1, f2);
-  hJetPt[6]       = new TH1D("hJetPtN", "Jet p_{T}, (geant) not matches", nP, p1, p2);
-  hJetPtCorr[6]   = new TH1D("hJetPtCorrN", "Jet p_{T}^{corr}, (geant) not matches", nP, p1, p2);
-  hJetPhiVsEta[6] = new TH2D("hJetPhiVsEtaN", "Jet #varphi vs. #eta, (geant) not matches", nH, h1, h2, nF, f1, f2);
+  // not matches (particle jets that weren't matched)
+  hJetArea[6]     = new TH1D("hJetAreaN", "Jet area, not matches (particle)", nA, a1, a2);
+  hJetEta[6]      = new TH1D("hJetEtaN", "Jet eta, not matches (particle)", nH, h1, h2);
+  hJetPhi[6]      = new TH1D("hJetPhiN", "Jet phi, not matches (particle)", nF, f1, f2);
+  hJetPt[6]       = new TH1D("hJetPtN", "Jet p_{T}, not matches (particle)", nP, p1, p2);
+  hJetPtCorr[6]   = new TH1D("hJetPtCorrN", "Jet p_{T}^{corr}, not matches (particle)", nP, p1, p2);
+  hJetPhiVsEta[6] = new TH2D("hJetPhiVsEtaN", "Jet #varphi vs. #eta, not matches (particle)", nH, h1, h2, nF, f1, f2);
 
   // errors
   hEfficiencyA   -> Sumw2();
@@ -422,18 +422,18 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
   hResponsePtN   -> Sumw2();
   hResponsePtc   -> Sumw2();
   hResponsePtcN  -> Sumw2();
-  hRefmultG      -> Sumw2();
-  hRefmultU      -> Sumw2();
-  hNumJetsG      -> Sumw2();
-  hNumJetsU      -> Sumw2();
+  hRefmultP      -> Sumw2();
+  hRefmultD      -> Sumw2();
+  hNumJetsP      -> Sumw2();
+  hNumJetsD      -> Sumw2();
   hNumToMatch    -> Sumw2();
   hNumMatched    -> Sumw2();
-  hNumHardG      -> Sumw2();
-  hNumHardU      -> Sumw2();
-  hGeantArea     -> Sumw2();
-  hMatchArea     -> Sumw2();
-  hGeantPtCorr   -> Sumw2();
-  hMatchPtCorr   -> Sumw2();
+  hNumHardP      -> Sumw2();
+  hNumHardD      -> Sumw2();
+  hParArea       -> Sumw2();
+  hDetArea       -> Sumw2();
+  hParPtCorr     -> Sumw2();
+  hDetPtCorr     -> Sumw2();
   for (Int_t i = 0; i < nJetTypes; i++) {
     hJetArea[i]   -> Sumw2();
     hJetEta[i]    -> Sumw2();
@@ -452,36 +452,35 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
   // check to make sure there are a reasonable no. of events
   Int_t fEvt  = 0;
   Int_t nEvts = 0;
-  Int_t gEvts = (Int_t) tGnt -> GetEntries();
-  Int_t uEvts = (Int_t) tMu  -> GetEntries();
-  if (gEvts < uEvts) {
+  Int_t pEvts = (Int_t) tPar -> GetEntries();
+  Int_t dEvts = (Int_t) tDet -> GetEntries();
+  if (pEvts < dEvts) {
     cerr << "WARNING: There are less particle-level events than detector-level!\n"
          << "         Please double-check that everything is in order...\n"
-         << "         nParticle = " << gEvts << ", nDetector = " << uEvts
+         << "         nParticle = " << pEvts << ", nDetector = " << dEvts
          << endl;
-    if (gEvts > uEvts) fEvt = 1;
-    if (gEvts < uEvts) fEvt = 2;
-    nEvts = TMath::Min(gEvts, uEvts);
+    fEvt  = 2;
+    nEvts = pEvts;
   }
   else {
     fEvt  = 1;
-    nEvts = uEvts;
+    nEvts = dEvts;
   }
 
   // create map of tree-index to event / run no.
-  Int_t gMap[gEvts][3];
-  Int_t uMap[uEvts][3];
-  for (Int_t iGnt = 0; iGnt < gEvts; iGnt++) {
-    tGnt -> GetEntry(iGnt);
-    gMap[iGnt][0] = iGnt;
-    gMap[iGnt][1] = gEventIndex;
-    gMap[iGnt][2] = gRunId;
+  Int_t pMap[pEvts][3];
+  Int_t dMap[dEvts][3];
+  for (Int_t iPar = 0; iPar < pEvts; iPar++) {
+    tPar -> GetEntry(iPar);
+    pMap[iPar][0] = iPar;
+    pMap[iPar][1] = pEventIndex;
+    pMap[iPar][2] = pRunId;
   }
-  for (Int_t iDst = 0; iDst < uEvts; iDst++) {
-    tMu -> GetEntry(iDst);
-    uMap[iDst][0] = iDst;
-    uMap[iDst][1] = uEventIndex;
-    uMap[iDst][2] = uRunId;
+  for (Int_t iDet = 0; iDet < dEvts; iDet++) {
+    tDet -> GetEntry(iDet);
+    dMap[iDet][0] = iDet;
+    dMap[iDet][1] = dEventIndex;
+    dMap[iDet][2] = dRunId;
   }
 
 
@@ -493,73 +492,73 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
   Int_t nShift   = 0;
   Int_t nFound   = 0;
   Int_t nTrig    = 0;
-  Int_t nBytesG  = 0;
-  Int_t nBytesU  = 0;
+  Int_t nBytesP  = 0;
+  Int_t nBytesD  = 0;
   Int_t breakVal = 0;
   for (Int_t i = 0; i < nEvts; i++) {
 
     // locate event in geant or mudst tree
-    Int_t iGntTree = -1;
-    Int_t iDstTree = -1;
+    Int_t iParTree = -1;
+    Int_t iDetTree = -1;
     switch (fEvt) {
       case 1:
-        iDstTree = i;
-        tMu -> GetEntry(iDstTree);
-        for (Int_t iGnt = 0; iGnt < gEvts; iGnt++) {
-          const Bool_t evtMatch = (gMap[iGnt][1] == uEventIndex);
-          const Bool_t runMatch = (gMap[iGnt][2] == uRunId);
+        iDetTree = i;
+        tDet -> GetEntry(iDetTree);
+        for (Int_t iPar = 0; iPar < pEvts; iPar++) {
+          const Bool_t evtMatch = (pMap[iPar][1] == dEventIndex);
+          const Bool_t runMatch = (pMap[iPar][2] == dRunId);
           if (evtMatch && runMatch) {
-            iGntTree = gMap[iGnt][0];
+            iParTree = pMap[iPar][0];
             break;
           }
         }
         break;
       case 2:
-        iGntTree = i;
-        tGnt -> GetEntry(iGntTree);
-        for (Int_t iDst = 0; iDst < uEvts; iDst++) {
-          const Bool_t evtMatch = (uMap[iDst][1] == gEventIndex);
-          const Bool_t runMatch = (uMap[iDst][2] == gRunId);
+        iParTree = i;
+        tPar -> GetEntry(iParTree);
+        for (Int_t iDet = 0; iDet < dEvts; iDet++) {
+          const Bool_t evtMatch = (dMap[iDet][1] == pEventIndex);
+          const Bool_t runMatch = (dMap[iDet][2] == pRunId);
           if (evtMatch && runMatch) {
-            iDstTree = uMap[iDst][0];
+            iDetTree = dMap[iDet][0];
             break;
           }
         }
         break;
     }  // end swich case
-    const Bool_t didNotFindGnt = (iGntTree == -1);
-    const Bool_t didNotFindDst = (iDstTree == -1);
-    if (didNotFindGnt || didNotFindDst) continue;
+    const Bool_t didNotFindPar = (iParTree == -1);
+    const Bool_t didNotFindDet = (iDetTree == -1);
+    if (didNotFindPar || didNotFindDet) continue;
 
     // load entries
-    Int_t gBytes = tGnt -> GetEntry(iGntTree);
-    Int_t uBytes = tMu  -> GetEntry(iDstTree);
-    if (gBytes < 0) {
-      cerr << "ERROR: problem with Geant event " << i << "...\n" << endl;
+    Int_t pBytes = tPar -> GetEntry(iParTree);
+    Int_t dBytes = tDet -> GetEntry(iDetTree);
+    if (pBytes < 0) {
+      cerr << "ERROR: problem with particle event " << i << "...\n" << endl;
       breakVal = 1;
       break;
     }
-    if (uBytes < 0) {
-      cerr << "ERROR: problem with MuDst event " << i + nShift << "..." << endl;
+    if (dBytes < 0) {
+      cerr << "ERROR: problem with detector event " << i + nShift << "..." << endl;
       breakVal = 1;
       break;
     }
 
     // should be same run and event
-    Bool_t isSameEvent = (gEventIndex == uEventIndex);
-    Bool_t isSameRun   = (gRunId == uRunId);
+    Bool_t isSameEvent = (pEventIndex == dEventIndex);
+    Bool_t isSameRun   = (pRunId == dRunId);
     if (!isSameEvent || !isSameRun) {
       cerr << "PANIC: event index and run ID are NOT the same! Stopped at i = " << i << "\n"
-           << "       GeantEvt = " << gEventIndex << ", MuDstEvt = " << uEventIndex << "\n"
-           << "       GeantRun = " << gRunId << ", MuDstRun = " << uRunId
+           << "       ParEvt = " << pEventIndex << ", DetEvt = " << dEventIndex << "\n"
+           << "       ParRun = " << pRunId << ", DetRun = " << dRunId
            << endl;
       breakVal = 1;
       break;
     }
     nFound++;
 
-    nBytesG += gBytes;
-    nBytesU += uBytes;
+    nBytesP += pBytes;
+    nBytesD += dBytes;
     if (!inBatchMode) {
       cout << "      Processing event " << i+1 << "/" << nEvts << "...\r" << flush;
       if (i+1 == nEvts) cout << endl;
@@ -569,10 +568,10 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
 
 
     // trigger info
-    const Double_t vZtrg  = uVz;
-    const Double_t eTtrg  = uTrgEt;
-    const Double_t hTrg   = uTrgEta;
-    const Double_t tspTrg = TMath::Abs(uTSP);
+    const Double_t vZtrg  = dVz;
+    const Double_t eTtrg  = dTrgEt;
+    const Double_t hTrg   = dTrgEta;
+    const Double_t tspTrg = TMath::Abs(dTSP);
 
     // trigger cuts
     const Bool_t isInVzCut  = (TMath::Abs(vZtrg) < MaxVz);
@@ -583,51 +582,51 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
     nTrig++;
 
 
-    // Geant jet loop
-    Int_t nHardG   = 0;
+    // particle jet loop
+    Int_t nHardP   = 0;
     Int_t nToMatch = 0;
     Int_t nMatched = 0;
-    Int_t nGjets   = (Int_t) gJetEta -> size();
-    Int_t nUjets   = (Int_t) uJetEta -> size();
-    for (Int_t j = 0; j < nGjets; j++) {
+    Int_t nPjets   = (Int_t) pJetEta -> size();
+    Int_t nDjets   = (Int_t) dJetEta -> size();
+    for (Int_t j = 0; j < nPjets; j++) {
 
-      const Double_t gA   = gJetArea   -> at(j);
-      const Double_t gH   = gJetEta    -> at(j);
-      const Double_t gF   = gJetPhi    -> at(j);
-      const Double_t gPt  = gJetPt     -> at(j);
-      //const Double_t gPtc = gJetPtCorr -> at(j);
-      const Double_t gPtc = gPt - (gRho * gA);  // quick fix [11.27.2017] 
-      if (gPt > HardCut)
-        ++nHardG;
+      const Double_t pA   = pJetArea   -> at(j);
+      const Double_t pH   = pJetEta    -> at(j);
+      const Double_t pF   = pJetPhi    -> at(j);
+      const Double_t pPt  = pJetPt     -> at(j);
+      //const Double_t gPtc = pJetPtCorr -> at(j);
+      const Double_t pPtc = pPt - (pRho * pA);  // quick fix [11.27.2017] 
+      if (pPt > HardCut)
+        ++nHardP;
 
       // calculate delta phi
-      Double_t gDf = gF - gTrgPhi;
-      if (gDf < ((-1. * pi) / 2.)) gDf += (2. * pi);
-      if (gDf > ((3. * pi) / 2.))  gDf -= (2. * pi);
-      const Double_t gDfCut    = TMath::Abs(gDf - pi);
-      const Bool_t   isRecoilG = (gDfCut < rDf);
+      Double_t pDf = pF - pTrgPhi;
+      if (pDf < ((-1. * pi) / 2.)) pDf += (2. * pi);
+      if (pDf > ((3. * pi) / 2.))  pDf -= (2. * pi);
+      const Double_t pDfCut    = TMath::Abs(pDf - pi);
+      const Bool_t   isRecoilP = (pDfCut < rDf);
 
-      if (gPt < MinJetPt)
+      if (pPt < MinJetPt)
         continue;
-      if (gA < MinArea)
+      if (pA < MinArea)
         continue;
-      if (!isRecoilG)
+      if (!isRecoilP)
         continue;
 
-      // fill Geant histograms
-      hJetArea[0]     -> Fill(gA);
-      hJetEta[0]      -> Fill(gH);
-      hJetPhi[0]      -> Fill(gF);
-      hJetPt[0]       -> Fill(gPt);
-      hJetPtCorr[0]   -> Fill(gPtc);
-      hJetPhiVsEta[0] -> Fill(gH, gF);
+      // fill particle histograms
+      hJetArea[0]     -> Fill(pA);
+      hJetEta[0]      -> Fill(pH);
+      hJetPhi[0]      -> Fill(pF);
+      hJetPt[0]       -> Fill(pPt);
+      hJetPtCorr[0]   -> Fill(pPtc);
+      hJetPhiVsEta[0] -> Fill(pH, pF);
 
 
-      if (gPt < Gcut)
+      if (pPt < Pcut)
         continue;
       else {
-        hGeantArea   -> Fill(gA);
-        hGeantPtCorr -> Fill(gPtc);
+        hParArea   -> Fill(pA);
+        hParPtCorr -> Fill(pPtc);
         ++nToMatch;
       }
 
@@ -643,41 +642,41 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
       Double_t bDp    = 0.;
       Double_t bDr    = 999.;
 
-      // MuDst jet loop
+      // detector jet loop
       Bool_t isMatched = false;
-      for (Int_t k = 0; k < nUjets; k++) {
+      for (Int_t k = 0; k < nDjets; k++) {
 
-        const Double_t uA   = uJetArea   -> at(k);
-        const Double_t uH   = uJetEta    -> at(k);
-        const Double_t uF   = uJetPhi    -> at(k);
-        const Double_t uPt  = uJetPt     -> at(k);
-        //const Double_t uPtc = uJetPtCorr -> at(k);
-        const Double_t uPtc = uPt - (uRho * uA);  // quick fix [11.27.2017]
+        const Double_t dA   = dJetArea   -> at(k);
+        const Double_t dH   = dJetEta    -> at(k);
+        const Double_t dF   = dJetPhi    -> at(k);
+        const Double_t dPt  = dJetPt     -> at(k);
+        //const Double_t uPtc = dJetPtCorr -> at(k);
+        const Double_t dPtc = dPt - (dRho * dA);  // quick fix [11.27.2017]
 
         // calculate delta phi
-        Double_t uDf = uF - uTrgPhi;
-        if (uDf < ((-1. * pi) / 2.)) uDf += (2. * pi);
-        if (uDf > ((3. * pi) / 2.))  uDf -= (2. * pi);
-        const Double_t uDfCut    = TMath::Abs(uDf - pi);
-        const Bool_t   isRecoilU = (uDfCut < rDf);
+        Double_t dDf = dF - dTrgPhi;
+        if (dDf < ((-1. * pi) / 2.)) dDf += (2. * pi);
+        if (dDf > ((3. * pi) / 2.))  dDf -= (2. * pi);
+        const Double_t dDfCut    = TMath::Abs(dDf - pi);
+        const Bool_t   isRecoilD = (dDfCut < rDf);
 
         Bool_t isInAcceptance = true;
-        if ((uPt < MinJetPt) || (uA < MinArea) || (!isRecoilU))
+        if ((dPt < MinJetPt) || (dA < MinArea) || (!isRecoilD))
           isInAcceptance = false;
 
 
         // match jets
-        Double_t qT = uPt / gPt;
-        Double_t s  = uA / gA;
-        Double_t dP = uPt - gPt;
-        Double_t dH = uH - gH;
-        Double_t dF = uF - gF;
-        Double_t dR = sqrt(dH*dH + dF*dF);
+        Double_t qT   = dPt / pPt;
+        Double_t s    = dA / pA;
+        Double_t dP   = dPt - pPt;
+        Double_t dHpd = dH - pH;
+        Double_t dFpd = dF - pF;
+        Double_t dR   = sqrt((dHpd * dHpd) + (dFpd * dFpd));
 
-        if (uPt < Ucut)
+        if (dPt < Dcut)
           continue;
 
-        // fill MuDst histograms
+        // fill detector histograms
         hJetQt[0]     -> Fill(qT);
         hJetDr[0]     -> Fill(dR);
         hJetS[0]      -> Fill(s);
@@ -694,12 +693,12 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
           isBetter  = ((dR < bDr) && (qT > bQt));
 
           // fill candidate histograms
-          hJetArea[2]     -> Fill(uA);
-          hJetEta[2]      -> Fill(uH);
-          hJetPhi[2]      -> Fill(uF);
-          hJetPt[2]       -> Fill(uPt);
-          hJetPtCorr[2]   -> Fill(uPtc);
-          hJetPhiVsEta[2] -> Fill(uH, uF);
+          hJetArea[2]     -> Fill(dA);
+          hJetEta[2]      -> Fill(dH);
+          hJetPhi[2]      -> Fill(dF);
+          hJetPt[2]       -> Fill(dPt);
+          hJetPtCorr[2]   -> Fill(dPtc);
+          hJetPhiVsEta[2] -> Fill(dH, dF);
           hJetQt[1]       -> Fill(qT);
           hJetDr[1]       -> Fill(dR);
           hJetS[1]        -> Fill(s);
@@ -721,12 +720,12 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
         Double_t qCut      = TMath::Abs(qT - 1);
         Bool_t   isNearOne = (qCut < 0.1);
         if (!isInRcut && isNearOne) {
-          hJetArea[5]     -> Fill(uA);
-          hJetEta[5]      -> Fill(uH);
-          hJetPhi[5]      -> Fill(uF);
-          hJetPt[5]       -> Fill(uPt);
-          hJetPtCorr[5]   -> Fill(uPtc);
-          hJetPhiVsEta[5] -> Fill(uH, uF);
+          hJetArea[5]     -> Fill(dA);
+          hJetEta[5]      -> Fill(dH);
+          hJetPhi[5]      -> Fill(dF);
+          hJetPt[5]       -> Fill(dPt);
+          hJetPtCorr[5]   -> Fill(dPtc);
+          hJetPhiVsEta[5] -> Fill(dH, dF);
           hJetQt[4]       -> Fill(qT);
           hJetDr[4]       -> Fill(dR);
           hJetS[4]        -> Fill(s);
@@ -738,30 +737,30 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
         // check if candidate is best match
         if (isMatched && isBetter) {
           bIndex = k;
-          bA     = uA;
-          bH     = uH;
-          bF     = uF;
-          bPt    = uPt;
-          bPtc   = uPtc;
+          bA     = dA;
+          bH     = dH;
+          bF     = dF;
+          bPt    = dPt;
+          bPtc   = dPtc;
           bQt    = qT;
           bS     = s;
           bDp    = dP;
           bDr    = dR;
         }
 
-      }  // end MuDst jet loop
+      }  // end detector jet loop
 
 
       // fill match histograms
       if (isMatched) {
-        hResponseA      -> Fill(bA, gA);
-        hResponseAn     -> Fill(bA, gA);
-        hResponsePt     -> Fill(bPt, gPt);
-        hResponsePtN    -> Fill(bPt, gPt);
-        hResponsePtc    -> Fill(bPtc, gPtc);
-        hResponsePtcN   -> Fill(bPtc, gPtc);
-        hMatchArea      -> Fill(bA);
-        hMatchPtCorr    -> Fill(bPtc);
+        hResponseA      -> Fill(bA, pA);
+        hResponseAn     -> Fill(bA, pA);
+        hResponsePt     -> Fill(bPt, pPt);
+        hResponsePtN    -> Fill(bPt, pPt);
+        hResponsePtc    -> Fill(bPtc, pPtc);
+        hResponsePtcN   -> Fill(bPtc, pPtc);
+        hDetArea        -> Fill(pA);
+        hDetPtCorr      -> Fill(pPtc);
         hJetArea[3]     -> Fill(bA);
         hJetEta[3]      -> Fill(bH);
         hJetPhi[3]      -> Fill(bF);
@@ -778,15 +777,15 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
         ++nMatched;
       }
       else {
-        hJetArea[6]     -> Fill(gA);
-        hJetEta[6]      -> Fill(gH);
-        hJetPhi[6]      -> Fill(gF);
-        hJetPt[6]       -> Fill(gPt);
-        hJetPtCorr[6]   -> Fill(gPtc);
-        hJetPhiVsEta[6] -> Fill(gH, gF);
+        hJetArea[6]     -> Fill(pA);
+        hJetEta[6]      -> Fill(pH);
+        hJetPhi[6]      -> Fill(pF);
+        hJetPt[6]       -> Fill(pPt);
+        hJetPtCorr[6]   -> Fill(pPtc);
+        hJetPhiVsEta[6] -> Fill(pH, pF);
       }
 
-    }  // end Geant jet loop
+    }  // end particle jet loop
 
     Int_t matchSize = (Int_t) matchIndices.size();
     if (nMatched != matchSize) {
@@ -796,43 +795,43 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
     }
 
 
-    // MuDst (detector) jet loop
-    Int_t nHardU = 0;
-    for (Int_t j = 0; j < nUjets; j++) {
+    // detector jet loop
+    Int_t nHardD = 0;
+    for (Int_t j = 0; j < nDjets; j++) {
 
-      Double_t uA   = uJetArea   -> at(j);
-      Double_t uH   = uJetEta    -> at(j);
-      Double_t uF   = uJetPhi    -> at(j);
-      Double_t uPt  = uJetPt     -> at(j);
-      //Double_t uPtc = uJetPtCorr -> at(j);
-      Double_t uPtc = uPt - (uRho * uA);  // quick fix [11.27.2017]
-      if (uPt > HardCut)
-        ++nHardU;
+      Double_t dA   = dJetArea   -> at(j);
+      Double_t dH   = dJetEta    -> at(j);
+      Double_t dF   = dJetPhi    -> at(j);
+      Double_t dPt  = dJetPt     -> at(j);
+      //Double_t uPtc = dJetPtCorr -> at(j);
+      Double_t dPtc = dPt - (dRho * dA);  // quick fix [11.27.2017]
+      if (dPt > HardCut)
+        ++nHardD;
 
       // calculate delta phi
-      Double_t uDf = uF - uTrgPhi;
-      if (uDf < ((-1. * pi) / 2.)) uDf += (2. * pi);
-      if (uDf > ((3. * pi) / 2.))  uDf -= (2. * pi);
-      const Double_t uDfCut    = TMath::Abs(uDf - pi);
-      const Bool_t   isRecoilU = (uDfCut < rDf);
+      Double_t dDf = dF - dTrgPhi;
+      if (dDf < ((-1. * pi) / 2.)) dDf += (2. * pi);
+      if (dDf > ((3. * pi) / 2.))  dDf -= (2. * pi);
+      const Double_t dDfCut    = TMath::Abs(dDf - pi);
+      const Bool_t   isRecoilD = (dDfCut < rDf);
 
-      if (uPt < MinJetPt)
+      if (dPt < MinJetPt)
         continue;
-      if (uA < MinArea)
+      if (dA < MinArea)
         continue;
-      if (!isRecoilU)
+      if (!isRecoilD)
         continue;
 
-      // fill MuDst histograms
-      hJetArea[1]     -> Fill(uA);
-      hJetEta[1]      -> Fill(uH);
-      hJetPhi[1]      -> Fill(uF);
-      hJetPt[1]       -> Fill(uPt);
-      hJetPtCorr[1]   -> Fill(uPtc);
-      hJetPhiVsEta[1] -> Fill(uH, uF);
+      // fill detector histograms
+      hJetArea[1]     -> Fill(dA);
+      hJetEta[1]      -> Fill(dH);
+      hJetPhi[1]      -> Fill(dF);
+      hJetPt[1]       -> Fill(dPt);
+      hJetPtCorr[1]   -> Fill(dPtc);
+      hJetPhiVsEta[1] -> Fill(dH, dF);
 
 
-      // check if MuDst jet matches Geant jet
+      // check if detector jet matches particle jet
       Bool_t isMatch = false;
       for (Int_t k = 0; k < nMatched; k++) {
         Int_t m = matchIndices.at(k);
@@ -844,27 +843,28 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
 
       // fill junk histograms
       if (!isMatch) {
-        hJetArea[4]     -> Fill(uA);
-        hJetEta[4]      -> Fill(uH);
-        hJetPhi[4]      -> Fill(uF);
-        hJetPt[4]       -> Fill(uPt);
-        hJetPtCorr[4]   -> Fill(uPtc);
-        hJetPhiVsEta[4] -> Fill(uH, uF);
+        hJetArea[4]     -> Fill(dA);
+        hJetEta[4]      -> Fill(dH);
+        hJetPhi[4]      -> Fill(dF);
+        hJetPt[4]       -> Fill(dPt);
+        hJetPtCorr[4]   -> Fill(dPtc);
+        hJetPhiVsEta[4] -> Fill(dH, dF);
       }
 
-    }  // end MuDst jet loop
+    }  // end detector jet loop
 
 
     // fill event histograms
-    hRefmultG   -> Fill(gRefmult);
-    hRefmultU   -> Fill(uRefmult);
-    hNumJetsG   -> Fill(gNJets);
-    hNumJetsU   -> Fill(uNJets);
+    hRefmultP   -> Fill(pRefmult);
+    hRefmultD   -> Fill(dRefmult);
+    hNumJetsP   -> Fill(pNJets);
+    hNumJetsD   -> Fill(dNJets);
     hNumToMatch -> Fill(nToMatch);
     hNumMatched -> Fill(nMatched);
-    hNumHardG   -> Fill(nHardG);
-    hNumHardU   -> Fill(nHardU);
+    hNumHardP   -> Fill(nHardP);
+    hNumHardD   -> Fill(nHardD);
 
+    // clear vector
     matchIndices.clear();
 
   }  // end event loop
@@ -885,12 +885,8 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
 
   // calculate efficiency
   cout << "    Calculating efficiency..." << endl;
-  TH1D *hGeantA  = (TH1D*) hJetArea[0] -> Clone();
-  TH1D *hMatchA  = (TH1D*) hJetArea[3] -> Clone();
-  TH1D *hGeantPt = (TH1D*) hJetPt[0]   -> Clone();
-  TH1D *hMatchPt = (TH1D*) hJetPt[3]   -> Clone();
-  hEfficiencyA  -> Divide(hMatchA, hGeantA, 1., 1.);
-  hEfficiencyPt -> Divide(hMatchPt, hGeantPt, 1., 1.);
+  hEfficiencyA  -> Divide(hDetArea, hParArea, 1., 1.);
+  hEfficiencyPt -> Divide(hDetPtCorr, hParPtCorr, 1., 1.);
 
 
   cout << "    Normalizing histograms..." << endl;
@@ -911,14 +907,14 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
   const Double_t pNorm  = nEvts * pBin;
   const Double_t hfNorm = hNorm * fBin;
   // normalize histograms
-  hRefmultG   -> Scale(1. / mNorm);
-  hRefmultU   -> Scale(1. / mNorm);
-  hNumJetsG   -> Scale(1. / nNorm);
-  hNumJetsU   -> Scale(1. / nNorm);
+  hRefmultP   -> Scale(1. / mNorm);
+  hRefmultD   -> Scale(1. / mNorm);
+  hNumJetsP   -> Scale(1. / nNorm);
+  hNumJetsD   -> Scale(1. / nNorm);
   hNumToMatch -> Scale(1. / nNorm);
   hNumMatched -> Scale(1. / nNorm);
-  hNumHardG   -> Scale(1. / nNorm);
-  hNumHardU   -> Scale(1. / nNorm);
+  hNumHardP   -> Scale(1. / nNorm);
+  hNumHardD   -> Scale(1. / nNorm);
   for (Int_t i = 0; i < nJetTypes; i++) {
     hJetArea[i]     -> Scale(1. / aNorm);
     hJetEta[i]      -> Scale(1. / hNorm);
@@ -989,8 +985,8 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
   const Int_t nDir = nJetTypes + 1;
   TDirectory *dir[nDir];
   dir[7] = (TDirectory*) fOut -> mkdir("EventInfo");
-  dir[0] = (TDirectory*) fOut -> mkdir("GeantJets");
-  dir[1] = (TDirectory*) fOut -> mkdir("MuDstJets");
+  dir[0] = (TDirectory*) fOut -> mkdir("ParticleJets");
+  dir[1] = (TDirectory*) fOut -> mkdir("DetectorJets");
   dir[2] = (TDirectory*) fOut -> mkdir("Candidates");
   dir[3] = (TDirectory*) fOut -> mkdir("MatchJets");
   dir[4] = (TDirectory*) fOut -> mkdir("JunkJets");
@@ -1008,18 +1004,18 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
   hResponsePtc  -> Write();
   hResponsePtcN -> Write();
   dir[7]        -> cd();
-  hRefmultG     -> Write();
-  hRefmultU     -> Write();
-  hNumJetsG     -> Write();
-  hNumJetsU     -> Write();
+  hRefmultP     -> Write();
+  hRefmultD     -> Write();
+  hNumJetsP     -> Write();
+  hNumJetsD     -> Write();
   hNumToMatch   -> Write();
   hNumMatched   -> Write();
-  hNumHardG     -> Write();
-  hNumHardU     -> Write();
-  hGeantArea    -> Write();
-  hMatchArea    -> Write();
-  hGeantPtCorr  -> Write();
-  hMatchPtCorr  -> Write();
+  hNumHardP     -> Write();
+  hNumHardD     -> Write();
+  hParArea      -> Write();
+  hDetArea      -> Write();
+  hParPtCorr    -> Write();
+  hDetPtCorr    -> Write();
   for (Int_t i = 0; i < nJetTypes; i++) {
     dir[i]          -> cd();
     hJetArea[i]     -> Write();
@@ -1043,10 +1039,10 @@ void MatchJets(const TString gPath=SGntDefault, const TString uPath=SMuDefault, 
   fOut -> Close();
 
   // close input
-  fGnt -> cd();
-  fGnt -> Close();
-  fMu  -> cd();
-  fMu  -> Close();
+  fPar -> cd();
+  fPar -> Close();
+  fDet -> cd();
+  fDet -> Close();
 
 
   cout << "  Matching script finished!\n" << endl;
