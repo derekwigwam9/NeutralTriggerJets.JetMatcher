@@ -13,6 +13,7 @@
 #include "TError.h"
 #include "TString.h"
 #include "TCanvas.h"
+#include "TLegend.h"
 #include "TProfile.h"
 
 using namespace std;
@@ -32,14 +33,14 @@ void CompareResponse() {
 
 
   // i/o parameters
-  const TString sOutput("pp200r9.responsePYTHIAxRFF.et9vz55had.r03a02rm1chrg.dr03q15.d14m5y2018.root");
-  const TString sInput[NHist] = {"pythia.afterModification.r03a02rm1chrg.d9m12y2017.root", "pp200r9rff.pTcorrResponse.et9vz55had.r03rm1chrg.dr03q15.d13m5y2018.root"};
-  const TString sHist[NHist]  = {"hResponsePtc", "hSum"};
+  const TString sOutput("pp200r9.responseFFxRFF.et9vz55had.r03a02rm1chrg.dr03q15.d15m5y2018.root");
+  const TString sInput[NHist] = {"pp200r9ff.pTcorrResponse.et9vz55had.r03a02rm1chrg.dr03q15.d15m5y2018.root", "pp200r9rff.pTcorrResponse.et9vz55had.r03a02rm1chrg.dr03q15.d15m5y2018.root"};
+  const TString sHist[NHist]  = {"hSum", "hSum"};
 
   // hist parameters
   const TString sRatio("Pythia / Embedding");
-  const TString sTitle[NHist] = {"Response, Pythia", "Response, Embedding (Run 9, RFF)"};
-  const TString sName[NHist]  = {"hPythia", "hEmbedding"};
+  const TString sTitle[NHist] = {"Response, FF", "Response, RFF"};
+  const TString sName[NHist]  = {"hFF", "hRFF"};
   const TString sAxis[NAxes]  = {"p_{T}^{corr}(matched)", "p_{T}^{corr}(MC)"};
   const Float_t xyRange[NPts] = {-3., -3., 43., 43.};
   const Float_t fLabel(0.025);
@@ -48,10 +49,10 @@ void CompareResponse() {
   const UInt_t  fCnt(1);
 
   // other parameters
-  const UInt_t nRebinX[NHist] = {10, 1};
-  const UInt_t nRebinY[NHist] = {10, 1};
+  const UInt_t nRebinX[NHist] = {5, 5};
+  const UInt_t nRebinY[NHist] = {5, 5};
   const Bool_t doNorm[NHist]  = {true, true};
-  const Bool_t doRebin[NHist] = {true, false};
+  const Bool_t doRebin[NHist] = {true, true};
 
 
   // open files
@@ -233,9 +234,9 @@ void CompareResponse() {
   cout << "    Made profiles." << endl;
 
 
-  // make plot
-  const UInt_t  width(2250);
-  const UInt_t  height(750);
+  // make response plot
+  const UInt_t  widthRes(2250);
+  const UInt_t  heightRes(750);
   const UInt_t  log(1);
   const UInt_t  grid(0);
   const UInt_t  ticks(1);
@@ -245,7 +246,7 @@ void CompareResponse() {
   const Float_t xyDiv[NPts] = {0.66, 0., 1., 1.};
   fOutput -> cd();
 
-  TCanvas *cResponse = new TCanvas("cResponse", "", width, height);
+  TCanvas *cResponse = new TCanvas("cResponse", "", widthRes, heightRes);
   TPad    *pNum      = new TPad("pNum", "", xyNum[0], xyNum[1], xyNum[2], xyNum[3]);
   TPad    *pDen      = new TPad("pDen", "", xyDen[0], xyDen[1], xyDen[2], xyDen[3]);
   TPad    *pDiv      = new TPad("pDiv", "", xyDiv[0], xyDiv[1], xyDiv[2], xyDiv[3]);
@@ -274,6 +275,53 @@ void CompareResponse() {
   cResponse -> Write();
   cResponse -> Close();
   cout << "    Made plot." << endl;
+
+  // make profile plot
+  const UInt_t  widthProf(750);
+  const UInt_t  heightProf(750);
+  const UInt_t  cProfFill(0);
+  const UInt_t  cProfLine(1);
+  const UInt_t  fAlign(12);
+  const UInt_t  cProfPlot[NHist] = {1, 2};
+  const UInt_t  mProfPlot[NHist] = {8, 4};
+  const UInt_t  lProfPlot[NHist] = {1, 2};
+  const Float_t xyProfLeg[NPts]  = {0.1, 0.1, 0.3, 0.3};
+  const TString sProfTitle("Response profile");
+  const TString sProfLabel[NHist] = {"FF", "RFF"};
+
+  TLegend *lProf = new TLegend(xyProfLeg[0], xyProfLeg[1], xyProfLeg[2], xyProfLeg[3]);
+  lProf -> SetFillColor(cProfFill);
+  lProf -> SetLineColor(cProfLine);
+  lProf -> SetTextFont(fTxt);
+  lProf -> SetTextAlign(fAlign);
+
+  TProfile *pPlot[NHist];
+  for (UInt_t iHist = 0; iHist < NHist; iHist++) {
+    // make name
+    TString sPlot("pPlot");
+    sPlot += iHist;
+
+    // make profile for plot
+    pPlot[iHist] = (TProfile*) pInput[iHist] -> Clone();
+    pPlot[iHist] -> SetName(sPlot.Data());
+    pPlot[iHist] -> SetTitle(sProfTitle.Data());
+    pPlot[iHist] -> SetLineColor(cProfPlot[iHist]);
+    pPlot[iHist] -> SetLineStyle(lProfPlot[iHist]);
+    pPlot[iHist] -> SetMarkerColor(cProfPlot[iHist]);
+    pPlot[iHist] -> SetMarkerStyle(mProfPlot[iHist]);
+
+    // add to legend
+    lProf -> AddEntry(pPlot[iHist], sProfLabel[iHist].Data());
+  }
+
+  TCanvas *cProfile = new TCanvas("cProfile", "", widthProf, heightProf);
+  cProfile -> SetGrid(grid, grid);
+  cProfile -> SetTicks(ticks, ticks);
+  pPlot[0] -> Draw();
+  pPlot[1] -> Draw("same");
+  lProf    -> Draw();
+  cProfile -> Write();
+  cProfile -> Close();
 
 
   // save histograms and close files
