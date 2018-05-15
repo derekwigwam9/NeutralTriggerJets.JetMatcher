@@ -22,9 +22,15 @@ static const TString SParDefault("../JetMaker/mc/pp200r9pt35rff.particle.r03rm1c
 static const TString SDetDefault("../JetMaker/mudst/pp200r9pt35rff.et920vz55had.r03rm1chrg.root");
 
 // jet parameters
-static const Double_t MinJetPt = 0.2;
-static const Double_t MinArea  = 0.2;  // R03: 0.2, R04: 0.5, R05: 0.65, R07: 1.2
-static const Double_t Rcut     = 0.3;  // Rcut = Rjet
+static const Double_t Rcut(0.3);      // Rcut = Rjet
+static const Double_t MinArea(0.2);   // R03: 0.2, R04: 0.5, R05: 0.65, R07: 1.2
+static const Double_t MinJetPt(0.2);
+
+// misc parameters
+static const Bool_t DoNorm(false);
+static const UInt_t NJetTypes(7);
+static const UInt_t NMatchTypes(5);
+static const UInt_t NDirectories(NJetTypes + 1);
 
 
 
@@ -34,23 +40,23 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
 
 
   // event constants
-  const Double_t MaxVz     = 55.;
-  const Double_t MaxTrgEta = 0.9;
-  const Double_t MinTrgEt  = 9.;
-  const Double_t MaxTrgEt  = 20.;
-  const Double_t MinTrgTsp = 3.;
-  const Double_t MaxTrgTsp = 100.;
+  const Double_t MaxVz(55.);
+  const Double_t MaxTrgEta(0.9);
+  const Double_t MinTrgEt(9.);
+  const Double_t MaxTrgEt(20.);
+  const Double_t MinTrgTsp(3.);
+  const Double_t MaxTrgTsp(100.);
 
   // matching constants
-  const Double_t Qmin    = 0.15;  // fraction of jet pT must be above Qmin
-  const Double_t Qmax    = 1.5;   // fraction of jet pT must be below Qmax
-  const Double_t HardCut = 10.;   // jets w/ pT > HardCut are considered 'hard'
-  const Double_t Pcut    = 0.;    // pTpar must be above this
-  const Double_t Dcut    = 0.;    // pTdet must be above this
+  const Double_t Qmin(0.15);    // fraction of jet pT must be above Qmin
+  const Double_t Qmax(1.5);     // fraction of jet pT must be below Qmax
+  const Double_t HardCut(10.);  // jets w/ pT > HardCut are considered 'hard'
+  const Double_t Pcut(0.);      // pTpar must be above this
+  const Double_t Dcut(0.);      // pTdet must be above this
 
   // misc. constants
-  const Double_t pi  = TMath::Pi();
-  const Double_t rDf = pi / 4.;
+  const Double_t pi(TMath::Pi());
+  const Double_t RecoilDf(pi / 4.);
   cout << "    Opening files and grabbing trees..." << endl;
 
 
@@ -243,8 +249,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
 
   cout << "    Creating histograms..." << endl;
 
-  const Int_t nJetTypes   = 7;
-  const Int_t nMatchTypes = 5;
+  // results
   TH1D *hEfficiencyA;
   TH1D *hEfficiencyPt;
   TH2D *hResponseA;
@@ -267,151 +272,142 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   TH1D *hParPtCorr;
   TH1D *hDetPtCorr;
   // jet histograms  [0='P',1='D',2='C',3='M',4='J',5='Y',6='N']
-  TH1D *hJetArea[nJetTypes];
-  TH1D *hJetEta[nJetTypes];
-  TH1D *hJetPhi[nJetTypes];
-  TH1D *hJetPt[nJetTypes];
-  TH1D *hJetPtCorr[nJetTypes];
-  TH2D *hJetPhiVsEta[nJetTypes];
+  TH1D *hJetArea[NJetTypes];
+  TH1D *hJetEta[NJetTypes];
+  TH1D *hJetPhi[NJetTypes];
+  TH1D *hJetPt[NJetTypes];
+  TH1D *hJetPtCorr[NJetTypes];
+  TH2D *hJetPhiVsEta[NJetTypes];
   // matching histograms [0='P',1='D',2='M',3='J',4='Y']
-  TH1D *hJetQt[nMatchTypes];
-  TH1D *hJetDr[nMatchTypes];
-  TH1D *hJetS[nMatchTypes];
-  TH1D *hJetDp[nMatchTypes];
-  TH2D *hJetQtVsDr[nMatchTypes];
-  TH2D *hJetSvsDr[nMatchTypes];
+  TH1D *hJetQt[NMatchTypes];
+  TH1D *hJetDr[NMatchTypes];
+  TH1D *hJetS[NMatchTypes];
+  TH1D *hJetDp[NMatchTypes];
+  TH2D *hJetQtVsDr[NMatchTypes];
+  TH2D *hJetSvsDr[NMatchTypes];
 
   // histogram parameters
-  const Int_t    nM = 200;
-  const Int_t    nN = 100;
-  const Int_t    nA = 500;
-  const Int_t    nH = 100;
-  const Int_t    nF = 360;
-  const Int_t    nP = 110;
-  const Int_t    nQ = 600;
-  const Int_t    nR = 600;
-  const Int_t    nS = 600;
-  const Int_t    nD = 100;
-  const Double_t m1 = 0.;
-  const Double_t m2 = 200.;
-  const Double_t n1 = 0.;
-  const Double_t n2 = 100;
-  const Double_t a1 = 0.;
-  const Double_t a2 = 5.;
-  const Double_t h1 = -5.;
-  const Double_t h2 = 5.;
-  const Double_t f1 = -2.*pi;
-  const Double_t f2 = 2.*pi;
-  const Double_t p1 = -10.;
-  const Double_t p2 = 100.;
-  const Double_t q1 = 0.;
-  const Double_t q2 = 3.;
-  const Double_t r1 = 0.;
-  const Double_t r2 = 3.;
-  const Double_t s1 = 0.;
-  const Double_t s2 = 3.;
-  const Double_t d1 = -50.;
-  const Double_t d2 = 50.;
-  hEfficiencyA    = new TH1D("hEfficiencyA", "Efficiency, #epsilon(A_{jet}) = N_{det}(A_{jet})/N_{par}(A_{jet})", nA, a1, a2);
-  hEfficiencyPt   = new TH1D("hEfficiencyPt", "Efficiency, #epsilon(p_{T}^{jet}) = N_{det}(p_{T}^{jet})/N_{par}(p_{T}^{jet})", nP, p1, p2);
-  hResponseA      = new TH2D("hResponseA", "Response matrix, jet area; detector; particle", nA, a1, a2, nA, a1, a2);
-  hResponseAn     = new TH2D("hResponseAn", "Response matrix, jet area (normalized); detector; particle", nA, a1, a2, nA, a1, a2);
-  hResponsePt     = new TH2D("hResponsePt", "Response matrix, jet p_{T}; detector; particle", nP, p1, p2, nP, p1, p2);
-  hResponsePtN    = new TH2D("hResponsePtN", "Response matrix, jet p_{T} (normalized); detector; particle", nP, p1, p2, nP, p1, p2);
-  hResponsePtc    = new TH2D("hResponsePtc", "Response matrix, jet p_{T}^{corr}; detector; particle", nP, p1, p2, nP, p1, p2);
-  hResponsePtcN   = new TH2D("hResponsePtcN", "Response matrix, jet p_{T}^{corr} (normalized); detector; particle", nP, p1, p2, nP, p1, p2);
+  const UInt_t   mNum(200);
+  const UInt_t   nNum(100);
+  const UInt_t   aNum(500);
+  const UInt_t   hNum(100);
+  const UInt_t   fNum(360);
+  const UInt_t   pNum(550);
+  const UInt_t   qNum(600);
+  const UInt_t   rNum(600);
+  const UInt_t   sNum(600);
+  const UInt_t   dNum(100);
+  const Double_t mBin[2] = {0., 200.};
+  const Double_t nBin[2] = {0., 100};
+  const Double_t aBin[2] = {0., 5.};
+  const Double_t hBin[2] = {-5., 5.};
+  const Double_t fBin[2] = {-2.*pi, 2.*pi};
+  const Double_t pBin[2] = {-10., 100.};
+  const Double_t qBin[2] = {0., 3.};
+  const Double_t rBin[2] = {0., 3.};
+  const Double_t sBin[2] = {0., 3.};
+  const Double_t dBin[2] = {-50., 50.};
+  // results
+  hEfficiencyA    = new TH1D("hEfficiencyA", "Efficiency, #epsilon(A_{jet}) = N_{det}(A_{jet})/N_{par}(A_{jet})", aNum, aBin[0], aBin[1]);
+  hEfficiencyPt   = new TH1D("hEfficiencyPt", "Efficiency, #epsilon(p_{T}^{jet}) = N_{det}(p_{T}^{jet})/N_{par}(p_{T}^{jet})", pNum, pBin[0], pBin[1]);
+  hResponseA      = new TH2D("hResponseA", "Response matrix, jet area; detector; particle", aNum, aBin[0], aBin[1], aNum, aBin[0], aBin[1]);
+  hResponseAn     = new TH2D("hResponseAn", "Response matrix, jet area (normalized); detector; particle", aNum, aBin[0], aBin[1], aNum, aBin[0], aBin[1]);
+  hResponsePt     = new TH2D("hResponsePt", "Response matrix, jet p_{T}; detector; particle", pNum, pBin[0], pBin[1], pNum, pBin[0], pBin[1]);
+  hResponsePtN    = new TH2D("hResponsePtN", "Response matrix, jet p_{T} (normalized); detector; particle", pNum, pBin[0], pBin[1], pNum, pBin[0], pBin[1]);
+  hResponsePtc    = new TH2D("hResponsePtc", "Response matrix, jet p_{T}^{corr}; detector; particle", pNum, pBin[0], pBin[1], pNum, pBin[0], pBin[1]);
+  hResponsePtcN   = new TH2D("hResponsePtcN", "Response matrix, jet p_{T}^{corr} (normalized); detector; particle", pNum, pBin[0], pBin[1], pNum, pBin[0], pBin[1]);
   // event histograms
-  hRefmultP       = new TH1D("hRefmultP", "Particle Refmult", nM, m1, m2);
-  hRefmultD       = new TH1D("hRefmultD", "Detector Refmult", nM, m1, m2);
-  hNumJetsP       = new TH1D("hNumJetsP", "no. of jets, particle", nN, n1, n2);
-  hNumJetsD       = new TH1D("hNumJetsD", "No. of jets, detector", nN, n1, n2);
-  hNumToMatch     = new TH1D("hNumToMatch", "No. of jets to match (ie. no. of jets w/ pT > pTcut)", nN, n1, n2);
-  hNumMatched     = new TH1D("hNumMatched", "No. of jets matched", nN, n1, n2);
-  hNumHardP       = new TH1D("hNumHardP", "No. of jets w/ p_{T} above a threshold, particle", nN, n1, n2);
-  hNumHardD       = new TH1D("hNumHardD", "No. of jets w/ p_{T} above a threshold, detector", nN, n1, n2);
-  hParArea        = new TH1D("hParArea", "Total no. of jets to match per A_{jet} bin (for efficiency)", nA, a1, a2);
-  hDetArea        = new TH1D("hDetArea", "Total no. of jets matched per A_{jet} bin (for efficiency, no smearing)", nA, a1, a2);
-  hParPtCorr      = new TH1D("hParPtCorr", "Total no. of jets to match per p_{T}^{corr} bin (for efficiency)", nP, p1, p2);
-  hDetPtCorr      = new TH1D("hDetPtCorr", "Total no. of jets matched per p_{T}^{corr} bin (for efficiency, no smearing)", nP, p1, p2);
+  hRefmultP       = new TH1D("hRefmultP", "Particle Refmult", mNum, mBin[0], mBin[1]);
+  hRefmultD       = new TH1D("hRefmultD", "Detector Refmult", mNum, mBin[0], mBin[1]);
+  hNumJetsP       = new TH1D("hNumJetsP", "no. of jets, particle", nNum, nBin[0], nBin[1]);
+  hNumJetsD       = new TH1D("hNumJetsD", "No. of jets, detector", nNum, nBin[0], nBin[1]);
+  hNumToMatch     = new TH1D("hNumToMatch", "No. of jets to match (ie. no. of jets w/ pT > pTcut)", nNum, nBin[0], nBin[1]);
+  hNumMatched     = new TH1D("hNumMatched", "No. of jets matched", nNum, nBin[0], nBin[1]);
+  hNumHardP       = new TH1D("hNumHardP", "No. of jets w/ p_{T} above a threshold, particle", nNum, nBin[0], nBin[1]);
+  hNumHardD       = new TH1D("hNumHardD", "No. of jets w/ p_{T} above a threshold, detector", nNum, nBin[0], nBin[1]);
+  hParArea        = new TH1D("hParArea", "Total no. of jets to match per A_{jet} bin (for efficiency)", aNum, aBin[0], aBin[1]);
+  hDetArea        = new TH1D("hDetArea", "Total no. of jets matched per A_{jet} bin (for efficiency, no smearing)", aNum, aBin[0], aBin[1]);
+  hParPtCorr      = new TH1D("hParPtCorr", "Total no. of jets to match per p_{T}^{corr} bin (for efficiency)", pNum, pBin[0], pBin[1]);
+  hDetPtCorr      = new TH1D("hDetPtCorr", "Total no. of jets matched per p_{T}^{corr} bin (for efficiency, no smearing)", pNum, pBin[0], pBin[1]);
   // particle jets
-  hJetArea[0]     = new TH1D("hJetAreaP", "Jet area, particle", nA, a1, a2);
-  hJetEta[0]      = new TH1D("hJetEtaP", "Jet eta, particle", nH, h1, h2);
-  hJetPhi[0]      = new TH1D("hJetPhiP", "Jet phi, particle", nF, f1, f2);
-  hJetPt[0]       = new TH1D("hJetPtP", "Jet p_{T}, particle", nP, p1, p2);
-  hJetPtCorr[0]   = new TH1D("hJetPtCorrP", "Jet p_{T}^{corr}, particle", nP, p1, p2);
-  hJetPhiVsEta[0] = new TH2D("hJetPhiVsEtaP", "Jet #varphi vs. #eta, particle", nH, h1, h2, nF, f1, f2);
+  hJetArea[0]     = new TH1D("hJetAreaP", "Jet area, particle", aNum, aBin[0], aBin[1]);
+  hJetEta[0]      = new TH1D("hJetEtaP", "Jet eta, particle", hNum, hBin[0], hBin[1]);
+  hJetPhi[0]      = new TH1D("hJetPhiP", "Jet phi, particle", fNum, fBin[0], fBin[1]);
+  hJetPt[0]       = new TH1D("hJetPtP", "Jet p_{T}, particle", pNum, pBin[0], pBin[1]);
+  hJetPtCorr[0]   = new TH1D("hJetPtCorrP", "Jet p_{T}^{corr}, particle", pNum, pBin[0], pBin[1]);
+  hJetPhiVsEta[0] = new TH2D("hJetPhiVsEtaP", "Jet #varphi vs. #eta, particle", hNum, hBin[0], hBin[1], fNum, fBin[0], fBin[1]);
   // detector jets
-  hJetArea[1]     = new TH1D("hJetAreaD", "Jet area, detector", nA, a1, a2);
-  hJetEta[1]      = new TH1D("hJetEtaD", "Jet eta, detector", nH, h1, h2);
-  hJetPhi[1]      = new TH1D("hJetPhiD", "Jet phi, detector", nF, f1, f2);
-  hJetPt[1]       = new TH1D("hJetPtD", "Jet p_{T}, detector", nP, p1, p2);
-  hJetPtCorr[1]   = new TH1D("hJetPtCorrD", "Jet p_{T}^{corr}, detector", nP, p1, p2);
-  hJetPhiVsEta[1] = new TH2D("hJetPhiVsEtaD", "Jet #varphi vs. #eta, detector", nH, h1, h2, nF, f1, f2);
-  hJetQt[0]       = new TH1D("hJetQtD", "Jet q_{T}, detector (normalization different!)", nQ, q1, q2);
-  hJetDr[0]       = new TH1D("hJetDrD", "Jet #Deltar, detector (normalization different!)", nR, r1, r2);
-  hJetS[0]        = new TH1D("hJetSd", "Jet s=A_{det}/A_{par}, detector (normalization different!)", nS, s1, s2);
-  hJetDp[0]       = new TH1D("hJetDpD", "Jet #Deltap_{T}=p_{T}^{det}-p_{T}^{par}, detector (normalization different!)", nD, d1, d2);
-  hJetQtVsDr[0]   = new TH2D("hJetQtVsDrD", "Jet q_{T} vs. #Deltar, detector (normalization different!); #Deltar; q_{T}", nR, r1, r2, nQ, q1, q2);
-  hJetSvsDr[0]    = new TH2D("hJetSvsDrD", "Jet s vs. #Deltar, detector (normalization different!); #Deltar; s", nR, r1, r2, nS, s1, s2);
+  hJetArea[1]     = new TH1D("hJetAreaD", "Jet area, detector", aNum, aBin[0], aBin[1]);
+  hJetEta[1]      = new TH1D("hJetEtaD", "Jet eta, detector", hNum, hBin[0], hBin[1]);
+  hJetPhi[1]      = new TH1D("hJetPhiD", "Jet phi, detector", fNum, fBin[0], fBin[1]);
+  hJetPt[1]       = new TH1D("hJetPtD", "Jet p_{T}, detector", pNum, pBin[0], pBin[1]);
+  hJetPtCorr[1]   = new TH1D("hJetPtCorrD", "Jet p_{T}^{corr}, detector", pNum, pBin[0], pBin[1]);
+  hJetPhiVsEta[1] = new TH2D("hJetPhiVsEtaD", "Jet #varphi vs. #eta, detector", hNum, hBin[0], hBin[1], fNum, fBin[0], fBin[1]);
+  hJetQt[0]       = new TH1D("hJetQtD", "Jet q_{T}, detector (normalization different!)", qNum, qBin[0], qBin[1]);
+  hJetDr[0]       = new TH1D("hJetDrD", "Jet #Deltar, detector (normalization different!)", rNum, rBin[0], rBin[1]);
+  hJetS[0]        = new TH1D("hJetSd", "Jet s=A_{det}/A_{par}, detector (normalization different!)", sNum, sBin[0], sBin[1]);
+  hJetDp[0]       = new TH1D("hJetDpD", "Jet #Deltap_{T}=p_{T}^{det}-p_{T}^{par}, detector (normalization different!)", dNum, dBin[0], dBin[1]);
+  hJetQtVsDr[0]   = new TH2D("hJetQtVsDrD", "Jet q_{T} vs. #Deltar, detector (normalization different!); #Deltar; q_{T}", rNum, rBin[0], rBin[1], qNum, qBin[0], qBin[1]);
+  hJetSvsDr[0]    = new TH2D("hJetSvsDrD", "Jet s vs. #Deltar, detector (normalization different!); #Deltar; s", rNum, rBin[0], rBin[1], sNum, sBin[0], sBin[1]);
   // candidate matches
-  hJetArea[2]     = new TH1D("hJetAreaC", "Jet area, candidates", nA, a1, a2);
-  hJetEta[2]      = new TH1D("hJetEtaC", "Jet eta, candidates", nH, h1, h2);
-  hJetPhi[2]      = new TH1D("hJetPhiC", "Jet phi, candidates", nF, f1, f2);
-  hJetPt[2]       = new TH1D("hJetPtC", "Jet p_{T}, candidates", nP, p1, p2);
-  hJetPtCorr[2]   = new TH1D("hJetPtCorrC", "Jet p_{T}^{corr}, candidates", nP, p1, p2);
-  hJetPhiVsEta[2] = new TH2D("hJetPhiVsEtaC", "Jet #varphi vs. #eta, candidates", nH, h1, h2, nF, f1, f2);
-  hJetQt[1]       = new TH1D("hJetQtC", "Jet q_{T}, candidates", nQ, q1, q2);
-  hJetDr[1]       = new TH1D("hJetDrC", "Jet #Deltar, candidates", nR, r1, r2);
-  hJetS[1]        = new TH1D("hJetSc", "Jet s=A_{cand}/A_{par}, candidates", nS, s1, s2);
-  hJetDp[1]       = new TH1D("hJetDpC", "Jet #Deltap_{T}=p_{T}^{cand}-p_{T}^{par}, candidates (normalization different!)", nD, d1, d2);
-  hJetQtVsDr[1]   = new TH2D("hJetQtVsDrC", "Jet q_{T} vs. #Deltar, candidates; #Deltar; q_{T}", nR, r1, r2, nQ, q1, q2);
-  hJetSvsDr[1]    = new TH2D("hJetSvsDrC", "Jet s vs. #Deltar, candidates; #Deltar; s", nR, r1, r2, nS, s1, s2);
+  hJetArea[2]     = new TH1D("hJetAreaC", "Jet area, candidates", aNum, aBin[0], aBin[1]);
+  hJetEta[2]      = new TH1D("hJetEtaC", "Jet eta, candidates", hNum, hBin[0], hBin[1]);
+  hJetPhi[2]      = new TH1D("hJetPhiC", "Jet phi, candidates", fNum, fBin[0], fBin[1]);
+  hJetPt[2]       = new TH1D("hJetPtC", "Jet p_{T}, candidates", pNum, pBin[0], pBin[1]);
+  hJetPtCorr[2]   = new TH1D("hJetPtCorrC", "Jet p_{T}^{corr}, candidates", pNum, pBin[0], pBin[1]);
+  hJetPhiVsEta[2] = new TH2D("hJetPhiVsEtaC", "Jet #varphi vs. #eta, candidates", hNum, hBin[0], hBin[1], fNum, fBin[0], fBin[1]);
+  hJetQt[1]       = new TH1D("hJetQtC", "Jet q_{T}, candidates", qNum, qBin[0], qBin[1]);
+  hJetDr[1]       = new TH1D("hJetDrC", "Jet #Deltar, candidates", rNum, rBin[0], rBin[1]);
+  hJetS[1]        = new TH1D("hJetSc", "Jet s=A_{cand}/A_{par}, candidates", sNum, sBin[0], sBin[1]);
+  hJetDp[1]       = new TH1D("hJetDpC", "Jet #Deltap_{T}=p_{T}^{cand}-p_{T}^{par}, candidates (normalization different!)", dNum, dBin[0], dBin[1]);
+  hJetQtVsDr[1]   = new TH2D("hJetQtVsDrC", "Jet q_{T} vs. #Deltar, candidates; #Deltar; q_{T}", rNum, rBin[0], rBin[1], qNum, qBin[0], qBin[1]);
+  hJetSvsDr[1]    = new TH2D("hJetSvsDrC", "Jet s vs. #Deltar, candidates; #Deltar; s", rNum, rBin[0], rBin[1], sNum, sBin[0], sBin[1]);
   // matches
-  hJetArea[3]     = new TH1D("hJetAreaM", "Jet area, matches", nA, a1, a2);
-  hJetEta[3]      = new TH1D("hJetEtaM", "Jet eta, matches", nH, h1, h2);
-  hJetPhi[3]      = new TH1D("hJetPhiM", "Jet phi, matches", nF, f1, f2);
-  hJetPt[3]       = new TH1D("hJetPtM", "Jet p_{T}, matches", nP, p1, p2);
-  hJetPtCorr[3]   = new TH1D("hJetPtCorrM", "Jet p_{T}^{corr}, matches", nP, p1, p2);
-  hJetPhiVsEta[3] = new TH2D("hJetPhiVsEtaM", "Jet #varphi vs. #eta, matches", nH, h1, h2, nF, f1, f2);
-  hJetQt[2]       = new TH1D("hJetQtM", "Jet q_{T}, matches", nQ, q1, q2);
-  hJetDr[2]       = new TH1D("hJetDrM", "Jet #Deltar, matches", nR, r1, r2);
-  hJetS[2]        = new TH1D("hJetSm", "Jet s=A_{match}/A_{par}, matches", nS, s1, s2);
-  hJetDp[2]       = new TH1D("hJetDpM", "Jet #Deltap_{T}=p_{T}^{match}-p_{T}^{par}, matches (normalization different!)", nD, d1, d2);
-  hJetQtVsDr[2]   = new TH2D("hJetQtVsDrM", "Jet q_{T} vs. #Deltar, matches", nR, r1, r2, nQ, q1, q2);
-  hJetSvsDr[2]    = new TH2D("hJetSvsDrM", "Jet s vs. #Deltar, matches", nR, r1, r2, nS, s1, s2);
+  hJetArea[3]     = new TH1D("hJetAreaM", "Jet area, matches", aNum, aBin[0], aBin[1]);
+  hJetEta[3]      = new TH1D("hJetEtaM", "Jet eta, matches", hNum, hBin[0], hBin[1]);
+  hJetPhi[3]      = new TH1D("hJetPhiM", "Jet phi, matches", fNum, fBin[0], fBin[1]);
+  hJetPt[3]       = new TH1D("hJetPtM", "Jet p_{T}, matches", pNum, pBin[0], pBin[1]);
+  hJetPtCorr[3]   = new TH1D("hJetPtCorrM", "Jet p_{T}^{corr}, matches", pNum, pBin[0], pBin[1]);
+  hJetPhiVsEta[3] = new TH2D("hJetPhiVsEtaM", "Jet #varphi vs. #eta, matches", hNum, hBin[0], hBin[1], fNum, fBin[0], fBin[1]);
+  hJetQt[2]       = new TH1D("hJetQtM", "Jet q_{T}, matches", qNum, qBin[0], qBin[1]);
+  hJetDr[2]       = new TH1D("hJetDrM", "Jet #Deltar, matches", rNum, rBin[0], rBin[1]);
+  hJetS[2]        = new TH1D("hJetSm", "Jet s=A_{match}/A_{par}, matches", sNum, sBin[0], sBin[1]);
+  hJetDp[2]       = new TH1D("hJetDpM", "Jet #Deltap_{T}=p_{T}^{match}-p_{T}^{par}, matches (normalization different!)", dNum, dBin[0], dBin[1]);
+  hJetQtVsDr[2]   = new TH2D("hJetQtVsDrM", "Jet q_{T} vs. #Deltar, matches", rNum, rBin[0], rBin[1], qNum, qBin[0], qBin[1]);
+  hJetSvsDr[2]    = new TH2D("hJetSvsDrM", "Jet s vs. #Deltar, matches", rNum, rBin[0], rBin[1], sNum, sBin[0], sBin[1]);
   // junk (detector jets that weren't matched)
-  hJetArea[4]     = new TH1D("hJetAreaJ", "Jet area, junk", nA, a1, a2);
-  hJetEta[4]      = new TH1D("hJetEtaJ", "Jet eta, junk", nH, h1, h2);
-  hJetPhi[4]      = new TH1D("hJetPhiJ", "Jet phi, junk", nF, f1, f2);
-  hJetPt[4]       = new TH1D("hJetPtJ", "Jet p_{T}, junk", nP, p1, p2);
-  hJetPtCorr[4]   = new TH1D("hJetPtCorrJ", "Jet p_{T}^{corr}, junk", nP, p1, p2);
-  hJetPhiVsEta[4] = new TH2D("hJetPhiVsEtaJ", "Jet #varphi vs. #eta, junk", nH, h1, h2, nF, f1, f2);
-  hJetQt[3]       = new TH1D("hJetQtJ", "Jet q_{T}, junk (normalization different!)", nQ, q1, q2);
-  hJetDr[3]       = new TH1D("hJetDrJ", "Jet #Deltar, junk (normalization different!)", nR, r1, r2);
-  hJetS[3]        = new TH1D("hJetSj", "Jet s=A_{junk}/A_{par}, junk (normalization different!)", nS, s1, s2);
-  hJetDp[3]       = new TH1D("hJetDpJ", "Jet #Deltap_{T}=p_{T}^{junk}-p_{T}^{par}, junk (normalization different!)", nD, d1, d2);
-  hJetQtVsDr[3]   = new TH2D("hJetQtVsDrJ", "Jet q_{T} vs. #Deltar, junk (normalization different!)", nR, r1, r2, nQ, q1, q2);
-  hJetSvsDr[3]    = new TH2D("hJetSvsDrJ", "Jet s vs. #Deltar, junk (normalization different!)", nR, r1, r2, nS, s1, s2);
+  hJetArea[4]     = new TH1D("hJetAreaJ", "Jet area, junk", aNum, aBin[0], aBin[1]);
+  hJetEta[4]      = new TH1D("hJetEtaJ", "Jet eta, junk", hNum, hBin[0], hBin[1]);
+  hJetPhi[4]      = new TH1D("hJetPhiJ", "Jet phi, junk", fNum, fBin[0], fBin[1]);
+  hJetPt[4]       = new TH1D("hJetPtJ", "Jet p_{T}, junk", pNum, pBin[0], pBin[1]);
+  hJetPtCorr[4]   = new TH1D("hJetPtCorrJ", "Jet p_{T}^{corr}, junk", pNum, pBin[0], pBin[1]);
+  hJetPhiVsEta[4] = new TH2D("hJetPhiVsEtaJ", "Jet #varphi vs. #eta, junk", hNum, hBin[0], hBin[1], fNum, fBin[0], fBin[1]);
+  hJetQt[3]       = new TH1D("hJetQtJ", "Jet q_{T}, junk (normalization different!)", qNum, qBin[0], qBin[1]);
+  hJetDr[3]       = new TH1D("hJetDrJ", "Jet #Deltar, junk (normalization different!)", rNum, rBin[0], rBin[1]);
+  hJetS[3]        = new TH1D("hJetSj", "Jet s=A_{junk}/A_{par}, junk (normalization different!)", sNum, sBin[0], sBin[1]);
+  hJetDp[3]       = new TH1D("hJetDpJ", "Jet #Deltap_{T}=p_{T}^{junk}-p_{T}^{par}, junk (normalization different!)", dNum, dBin[0], dBin[1]);
+  hJetQtVsDr[3]   = new TH2D("hJetQtVsDrJ", "Jet q_{T} vs. #Deltar, junk (normalization different!)", rNum, rBin[0], rBin[1], qNum, qBin[0], qBin[1]);
+  hJetSvsDr[3]    = new TH2D("hJetSvsDrJ", "Jet s vs. #Deltar, junk (normalization different!)", rNum, rBin[0], rBin[1], sNum, sBin[0], sBin[1]);
   // mystery (jets w/ dR > Rjet and |qT-1|<.1)
-  hJetArea[5]     = new TH1D("hJetAreaY", "Jet area, mystery", nA, a1, a2);
-  hJetEta[5]      = new TH1D("hJetEtaY", "Jet eta, mystery", nH, h1, h2);
-  hJetPhi[5]      = new TH1D("hJetPhiY", "Jet phi, mystery", nF, f1, f2);
-  hJetPt[5]       = new TH1D("hJetPtY", "Jet p_{T}, mystery", nP, p1, p2);
-  hJetPtCorr[5]   = new TH1D("hJetPtCorrY", "Jet p_{T}^{corr}, mystery", nP, p1, p2);
-  hJetPhiVsEta[5] = new TH2D("hJetPhiVsEtaY", "Jet #varphi vs. #eta, mystery", nH, h1, h2, nF, f1, f2);
-  hJetQt[4]       = new TH1D("hJetQtY", "Jet q_{T}, mystery", nQ, q1, q2);
-  hJetDr[4]       = new TH1D("hJetDrY", "Jet #Deltar, mystery", nR, r1, r2);
-  hJetS[4]        = new TH1D("hJetSy", "Jet s=A_{?}/A_{par}, mystery", nS, s1, s2);
-  hJetDp[4]       = new TH1D("hJetDpY", "Jet #Deltap_{T}=p_{T}^{?}-p_{T}^{par}, mystery (normalization different!)", nD, d1, d2);
-  hJetQtVsDr[4]   = new TH2D("hJetQtVsDrY", "Jet q_{T} vs. #Deltar, mystery", nR, r1, r2, nQ, q1, q2);
-  hJetSvsDr[4]    = new TH2D("hJetSvsDrY", "Jet s vs. #Deltar, mystery", nR, r1, r2, nS, s1, s2);
+  hJetArea[5]     = new TH1D("hJetAreaY", "Jet area, mystery", aNum, aBin[0], aBin[1]);
+  hJetEta[5]      = new TH1D("hJetEtaY", "Jet eta, mystery", hNum, hBin[0], hBin[1]);
+  hJetPhi[5]      = new TH1D("hJetPhiY", "Jet phi, mystery", fNum, fBin[0], fBin[1]);
+  hJetPt[5]       = new TH1D("hJetPtY", "Jet p_{T}, mystery", pNum, pBin[0], pBin[1]);
+  hJetPtCorr[5]   = new TH1D("hJetPtCorrY", "Jet p_{T}^{corr}, mystery", pNum, pBin[0], pBin[1]);
+  hJetPhiVsEta[5] = new TH2D("hJetPhiVsEtaY", "Jet #varphi vs. #eta, mystery", hNum, hBin[0], hBin[1], fNum, fBin[0], fBin[1]);
+  hJetQt[4]       = new TH1D("hJetQtY", "Jet q_{T}, mystery", qNum, qBin[0], qBin[1]);
+  hJetDr[4]       = new TH1D("hJetDrY", "Jet #Deltar, mystery", rNum, rBin[0], rBin[1]);
+  hJetS[4]        = new TH1D("hJetSy", "Jet s=A_{?}/A_{par}, mystery", sNum, sBin[0], sBin[1]);
+  hJetDp[4]       = new TH1D("hJetDpY", "Jet #Deltap_{T}=p_{T}^{?}-p_{T}^{par}, mystery (normalization different!)", dNum, dBin[0], dBin[1]);
+  hJetQtVsDr[4]   = new TH2D("hJetQtVsDrY", "Jet q_{T} vs. #Deltar, mystery", rNum, rBin[0], rBin[1], qNum, qBin[0], qBin[1]);
+  hJetSvsDr[4]    = new TH2D("hJetSvsDrY", "Jet s vs. #Deltar, mystery", rNum, rBin[0], rBin[1], sNum, sBin[0], sBin[1]);
   // not matches (particle jets that weren't matched)
-  hJetArea[6]     = new TH1D("hJetAreaN", "Jet area, not matches (particle)", nA, a1, a2);
-  hJetEta[6]      = new TH1D("hJetEtaN", "Jet eta, not matches (particle)", nH, h1, h2);
-  hJetPhi[6]      = new TH1D("hJetPhiN", "Jet phi, not matches (particle)", nF, f1, f2);
-  hJetPt[6]       = new TH1D("hJetPtN", "Jet p_{T}, not matches (particle)", nP, p1, p2);
-  hJetPtCorr[6]   = new TH1D("hJetPtCorrN", "Jet p_{T}^{corr}, not matches (particle)", nP, p1, p2);
-  hJetPhiVsEta[6] = new TH2D("hJetPhiVsEtaN", "Jet #varphi vs. #eta, not matches (particle)", nH, h1, h2, nF, f1, f2);
+  hJetArea[6]     = new TH1D("hJetAreaN", "Jet area, not matches (particle)", aNum, aBin[0], aBin[1]);
+  hJetEta[6]      = new TH1D("hJetEtaN", "Jet eta, not matches (particle)", hNum, hBin[0], hBin[1]);
+  hJetPhi[6]      = new TH1D("hJetPhiN", "Jet phi, not matches (particle)", fNum, fBin[0], fBin[1]);
+  hJetPt[6]       = new TH1D("hJetPtN", "Jet p_{T}, not matches (particle)", pNum, pBin[0], pBin[1]);
+  hJetPtCorr[6]   = new TH1D("hJetPtCorrN", "Jet p_{T}^{corr}, not matches (particle)", pNum, pBin[0], pBin[1]);
+  hJetPhiVsEta[6] = new TH2D("hJetPhiVsEtaN", "Jet #varphi vs. #eta, not matches (particle)", hNum, hBin[0], hBin[1], fNum, fBin[0], fBin[1]);
 
   // errors
   hEfficiencyA   -> Sumw2();
@@ -434,14 +430,14 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   hDetArea       -> Sumw2();
   hParPtCorr     -> Sumw2();
   hDetPtCorr     -> Sumw2();
-  for (Int_t i = 0; i < nJetTypes; i++) {
+  for (UInt_t i = 0; i < NJetTypes; i++) {
     hJetArea[i]   -> Sumw2();
     hJetEta[i]    -> Sumw2();
     hJetPhi[i]    -> Sumw2();
     hJetPt[i]     -> Sumw2();
     hJetPtCorr[i] -> Sumw2();
   }
-  for (Int_t i = 0; i < nMatchTypes; i++) {
+  for (UInt_t i = 0; i < NMatchTypes; i++) {
     hJetQt[i] -> Sumw2();
     hJetDr[i] -> Sumw2();
     hJetS[i]  -> Sumw2();
@@ -450,10 +446,10 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
 
 
   // check to make sure there are a reasonable no. of events
-  Int_t fEvt  = 0;
-  Int_t nEvts = 0;
-  Int_t pEvts = (Int_t) tPar -> GetEntries();
-  Int_t dEvts = (Int_t) tDet -> GetEntries();
+  UInt_t fEvt  = 0;
+  UInt_t nEvts = 0;
+  UInt_t pEvts = (UInt_t) tPar -> GetEntries();
+  UInt_t dEvts = (UInt_t) tDet -> GetEntries();
   if (pEvts < dEvts) {
     cerr << "WARNING: There are less particle-level events than detector-level!\n"
          << "         Please double-check that everything is in order...\n"
@@ -470,13 +466,13 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   // create map of tree-index to event / run no.
   Int_t pMap[pEvts][3];
   Int_t dMap[dEvts][3];
-  for (Int_t iPar = 0; iPar < pEvts; iPar++) {
+  for (UInt_t iPar = 0; iPar < pEvts; iPar++) {
     tPar -> GetEntry(iPar);
     pMap[iPar][0] = iPar;
     pMap[iPar][1] = pEventIndex;
     pMap[iPar][2] = pRunId;
   }
-  for (Int_t iDet = 0; iDet < dEvts; iDet++) {
+  for (UInt_t iDet = 0; iDet < dEvts; iDet++) {
     tDet -> GetEntry(iDet);
     dMap[iDet][0] = iDet;
     dMap[iDet][1] = dEventIndex;
@@ -489,13 +485,13 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   cout << "    Beginning event loop..." << endl;
 
   // event loop
-  Int_t nShift   = 0;
-  Int_t nFound   = 0;
-  Int_t nTrig    = 0;
-  Int_t nBytesP  = 0;
-  Int_t nBytesD  = 0;
-  Int_t breakVal = 0;
-  for (Int_t i = 0; i < nEvts; i++) {
+  Int_t  breakVal(0);
+  Int_t  nBytesP(0);
+  Int_t  nBytesD(0);
+  UInt_t nShift(0);
+  UInt_t nFound(0);
+  UInt_t nTrig(0);
+  for (UInt_t i = 0; i < nEvts; i++) {
 
     // locate event in geant or mudst tree
     Int_t iParTree = -1;
@@ -504,7 +500,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       case 1:
         iDetTree = i;
         tDet -> GetEntry(iDetTree);
-        for (Int_t iPar = 0; iPar < pEvts; iPar++) {
+        for (UInt_t iPar = 0; iPar < pEvts; iPar++) {
           const Bool_t evtMatch = (pMap[iPar][1] == dEventIndex);
           const Bool_t runMatch = (pMap[iPar][2] == dRunId);
           if (evtMatch && runMatch) {
@@ -516,7 +512,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       case 2:
         iParTree = i;
         tPar -> GetEntry(iParTree);
-        for (Int_t iDet = 0; iDet < dEvts; iDet++) {
+        for (UInt_t iDet = 0; iDet < dEvts; iDet++) {
           const Bool_t evtMatch = (dMap[iDet][1] == pEventIndex);
           const Bool_t runMatch = (dMap[iDet][2] == pRunId);
           if (evtMatch && runMatch) {
@@ -583,12 +579,12 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
 
 
     // particle jet loop
-    Int_t nHardP   = 0;
-    Int_t nToMatch = 0;
-    Int_t nMatched = 0;
-    Int_t nPjets   = (Int_t) pJetEta -> size();
-    Int_t nDjets   = (Int_t) dJetEta -> size();
-    for (Int_t j = 0; j < nPjets; j++) {
+    UInt_t nHardP   = 0;
+    UInt_t nToMatch = 0;
+    UInt_t nMatched = 0;
+    UInt_t nPjets   = (UInt_t) pJetEta -> size();
+    UInt_t nDjets   = (UInt_t) dJetEta -> size();
+    for (UInt_t j = 0; j < nPjets; j++) {
 
       const Double_t pA   = pJetArea   -> at(j);
       const Double_t pH   = pJetEta    -> at(j);
@@ -604,7 +600,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       if (pDf < ((-1. * pi) / 2.)) pDf += (2. * pi);
       if (pDf > ((3. * pi) / 2.))  pDf -= (2. * pi);
       const Double_t pDfCut    = TMath::Abs(pDf - pi);
-      const Bool_t   isRecoilP = (pDfCut < rDf);
+      const Bool_t   isRecoilP = (pDfCut < RecoilDf);
 
       if (pPt < MinJetPt)
         continue;
@@ -644,7 +640,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
 
       // detector jet loop
       Bool_t isMatched = false;
-      for (Int_t k = 0; k < nDjets; k++) {
+      for (UInt_t k = 0; k < nDjets; k++) {
 
         const Double_t dA   = dJetArea   -> at(k);
         const Double_t dH   = dJetEta    -> at(k);
@@ -658,7 +654,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
         if (dDf < ((-1. * pi) / 2.)) dDf += (2. * pi);
         if (dDf > ((3. * pi) / 2.))  dDf -= (2. * pi);
         const Double_t dDfCut    = TMath::Abs(dDf - pi);
-        const Bool_t   isRecoilD = (dDfCut < rDf);
+        const Bool_t   isRecoilD = (dDfCut < RecoilDf);
 
         Bool_t isInAcceptance = true;
         if ((dPt < MinJetPt) || (dA < MinArea) || (!isRecoilD))
@@ -787,7 +783,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
 
     }  // end particle jet loop
 
-    Int_t matchSize = (Int_t) matchIndices.size();
+    UInt_t matchSize = (UInt_t) matchIndices.size();
     if (nMatched != matchSize) {
       cerr << "ERROR: matchIndices did something weird in event " << i << "..." << endl;
       breakVal = 1;
@@ -796,8 +792,8 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
 
 
     // detector jet loop
-    Int_t nHardD = 0;
-    for (Int_t j = 0; j < nDjets; j++) {
+    UInt_t nHardD = 0;
+    for (UInt_t j = 0; j < nDjets; j++) {
 
       Double_t dA   = dJetArea   -> at(j);
       Double_t dH   = dJetEta    -> at(j);
@@ -813,7 +809,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       if (dDf < ((-1. * pi) / 2.)) dDf += (2. * pi);
       if (dDf > ((3. * pi) / 2.))  dDf -= (2. * pi);
       const Double_t dDfCut    = TMath::Abs(dDf - pi);
-      const Bool_t   isRecoilD = (dDfCut < rDf);
+      const Bool_t   isRecoilD = (dDfCut < RecoilDf);
 
       if (dPt < MinJetPt)
         continue;
@@ -833,7 +829,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
 
       // check if detector jet matches particle jet
       Bool_t isMatch = false;
-      for (Int_t k = 0; k < nMatched; k++) {
+      for (UInt_t k = 0; k < nMatched; k++) {
         Int_t m = matchIndices.at(k);
         if (j == m) {
           isMatch = true;
@@ -892,50 +888,52 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   cout << "    Normalizing histograms..." << endl;
 
   // bin widths
-  const Double_t mBin   = (m2 - m1) / nM;
-  const Double_t nBin   = (n2 - n1) / nN;
-  const Double_t aBin   = (a2 - a1) / nA;
-  const Double_t hBin   = (h2 - h1) / nH;
-  const Double_t fBin   = (f2 - f1) / nF;
-  const Double_t pBin   = (p2 - p1) / nP;
+  const Double_t mWidth = (mBin[1] - mBin[0]) / mNum;
+  const Double_t nWidth = (nBin[1] - nBin[0]) / nNum;
+  const Double_t aWidth = (aBin[1] - aBin[0]) / aNum;
+  const Double_t hWidth = (hBin[1] - hBin[0]) / hNum;
+  const Double_t fWidth = (fBin[1] - fBin[0]) / fNum;
+  const Double_t pWidth = (pBin[1] - pBin[0]) / pNum;
   // overall normalizations
-  const Double_t mNorm  = nEvts * mBin;
-  const Double_t nNorm  = nEvts * nBin;
-  const Double_t aNorm  = nEvts * aBin;
-  const Double_t hNorm  = nEvts * hBin;
-  const Double_t fNorm  = nEvts * fBin;
-  const Double_t pNorm  = nEvts * pBin;
-  const Double_t hfNorm = hNorm * fBin;
+  const Double_t mNorm  = nEvts * mWidth;
+  const Double_t nNorm  = nEvts * nWidth;
+  const Double_t aNorm  = nEvts * aWidth;
+  const Double_t hNorm  = nEvts * hWidth;
+  const Double_t fNorm  = nEvts * fWidth;
+  const Double_t pNorm  = nEvts * pWidth;
+  const Double_t hfNorm = hNorm * fWidth;
   // normalize histograms
-  hRefmultP   -> Scale(1. / mNorm);
-  hRefmultD   -> Scale(1. / mNorm);
-  hNumJetsP   -> Scale(1. / nNorm);
-  hNumJetsD   -> Scale(1. / nNorm);
-  hNumToMatch -> Scale(1. / nNorm);
-  hNumMatched -> Scale(1. / nNorm);
-  hNumHardP   -> Scale(1. / nNorm);
-  hNumHardD   -> Scale(1. / nNorm);
-  for (Int_t i = 0; i < nJetTypes; i++) {
-    hJetArea[i]     -> Scale(1. / aNorm);
-    hJetEta[i]      -> Scale(1. / hNorm);
-    hJetPhi[i]      -> Scale(1. / fNorm);
-    hJetPt[i]       -> Scale(1. / pNorm);
-    hJetPtCorr[i]   -> Scale(1. / pNorm);
-    hJetPhiVsEta[i] -> Scale(1. / hfNorm);
+  if (DoNorm) {
+    hRefmultP   -> Scale(1. / mNorm);
+    hRefmultD   -> Scale(1. / mNorm);
+    hNumJetsP   -> Scale(1. / nNorm);
+    hNumJetsD   -> Scale(1. / nNorm);
+    hNumToMatch -> Scale(1. / nNorm);
+    hNumMatched -> Scale(1. / nNorm);
+    hNumHardP   -> Scale(1. / nNorm);
+    hNumHardD   -> Scale(1. / nNorm);
+    for (UInt_t i = 0; i < NJetTypes; i++) {
+      hJetArea[i]     -> Scale(1. / aNorm);
+      hJetEta[i]      -> Scale(1. / hNorm);
+      hJetPhi[i]      -> Scale(1. / fNorm);
+      hJetPt[i]       -> Scale(1. / pNorm);
+      hJetPtCorr[i]   -> Scale(1. / pNorm);
+      hJetPhiVsEta[i] -> Scale(1. / hfNorm);
+    }
   }
 
   // normalize response matrices
-  const Int_t nAbinsX = hResponseAn   -> GetNbinsX();
-  const Int_t nAbinsY = hResponseAn   -> GetNbinsY();
-  const Int_t nPbinsX = hResponsePtN  -> GetNbinsX();
-  const Int_t nPbinsY = hResponsePtN  -> GetNbinsY();
-  const Int_t nCbinsX = hResponsePtcN -> GetNbinsX();
-  const Int_t nCbinsY = hResponsePtcN -> GetNbinsY();
-  for (Int_t i = 1; i < nAbinsY+1; i++) {
+  const UInt_t nAbinsX = hResponseAn   -> GetNbinsX();
+  const UInt_t nAbinsY = hResponseAn   -> GetNbinsY();
+  const UInt_t nPbinsX = hResponsePtN  -> GetNbinsX();
+  const UInt_t nPbinsY = hResponsePtN  -> GetNbinsY();
+  const UInt_t nCbinsX = hResponsePtcN -> GetNbinsX();
+  const UInt_t nCbinsY = hResponsePtcN -> GetNbinsY();
+  for (UInt_t i = 1; i < nAbinsY+1; i++) {
     const Double_t aNorm = hResponseAn -> Integral(1, nAbinsX, i, i);
     if (aNorm == 0.) continue;
 
-    for (Int_t j = 1; j < nAbinsX+1; j++) {
+    for (UInt_t j = 1; j < nAbinsX+1; j++) {
       const Double_t oldCnt = hResponseAn -> GetBinContent(j, i);
       const Double_t oldErr = hResponseAn -> GetBinError(j, i);
       const Double_t xWidth = hResponseAn -> GetXaxis() -> GetBinWidth(j);
@@ -947,11 +945,11 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       hResponseAn -> SetBinError(j, i, newErr);
     }
   }
-  for (Int_t i = 1; i < nPbinsY+1; i++) {
+  for (UInt_t i = 1; i < nPbinsY+1; i++) {
     const Double_t pNorm = hResponsePtN -> Integral(1, nPbinsX, i, i);
     if (pNorm == 0.) continue;
 
-    for (Int_t j = 1; j < nPbinsX+1; j++) {
+    for (UInt_t j = 1; j < nPbinsX+1; j++) {
       const Double_t oldCnt = hResponsePtN -> GetBinContent(j, i);
       const Double_t oldErr = hResponsePtN -> GetBinError(j, i);
       const Double_t xWidth = hResponsePtN -> GetXaxis() -> GetBinWidth(j);
@@ -963,11 +961,11 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       hResponsePtN -> SetBinError(j, i, newErr);
     }
   }
-  for (Int_t i = 1; i < nCbinsY+1; i++) {
+  for (UInt_t i = 1; i < nCbinsY+1; i++) {
     const Double_t cNorm = hResponsePtcN -> Integral(1, nCbinsX, i, i);
     if (cNorm == 0.) continue;
 
-    for (Int_t j = 1; j < nCbinsX+1; j++) {
+    for (UInt_t j = 1; j < nCbinsX+1; j++) {
       const Double_t oldCnt = hResponsePtcN -> GetBinContent(j, i);
       const Double_t oldErr = hResponsePtcN -> GetBinError(j, i);
       const Double_t xWidth = hResponsePtcN -> GetXaxis() -> GetBinWidth(j);
@@ -982,8 +980,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
 
 
   // create directory structure
-  const Int_t nDir = nJetTypes + 1;
-  TDirectory *dir[nDir];
+  TDirectory *dir[NDirectories];
   dir[7] = (TDirectory*) fOut -> mkdir("EventInfo");
   dir[0] = (TDirectory*) fOut -> mkdir("ParticleJets");
   dir[1] = (TDirectory*) fOut -> mkdir("DetectorJets");
@@ -1016,7 +1013,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   hDetArea      -> Write();
   hParPtCorr    -> Write();
   hDetPtCorr    -> Write();
-  for (Int_t i = 0; i < nJetTypes; i++) {
+  for (UInt_t i = 0; i < NJetTypes; i++) {
     dir[i]          -> cd();
     hJetArea[i]     -> Write();
     hJetEta[i]      -> Write();
@@ -1025,7 +1022,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
     hJetPtCorr[i]   -> Write();
     hJetPhiVsEta[i] -> Write();
   }
-  for (Int_t i = 0; i < nMatchTypes; i++) {
+  for (UInt_t i = 0; i < NMatchTypes; i++) {
     Int_t iDir = i + 1;
     dir[iDir]     -> cd();
     hJetQt[i]     -> Write();
