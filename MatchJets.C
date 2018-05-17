@@ -19,7 +19,7 @@ using namespace std;
 // filepaths
 static const TString SOutDefault("test.root");
 static const TString SParDefault("../JetMaker/mc/pp200r9pt35rff.particle.r03rm1chrg.root");
-static const TString SDetDefault("../JetMaker/mudst/pp200r9pt35rff.et920vz55had.r03rm1chrg.root");
+static const TString SDetDefault("../JetMaker/mudst/output/ForResponseMatrix/pp200r9pt35rff.et920vz55had.r03rm1chrg.root");
 
 // jet parameters
 static const Double_t Rcut(0.3);      // Rcut = Rjet
@@ -28,7 +28,7 @@ static const Double_t MinJetPt(0.2);
 
 // misc parameters
 static const Bool_t DoNorm(false);
-static const Bool_t UseVariablePtBins(true);
+static const Bool_t UseVariablePtBins(false);
 static const UInt_t NJetTypes(7);
 static const UInt_t NMatchTypes(5);
 static const UInt_t NDirectories(NJetTypes + 1);
@@ -42,9 +42,12 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
 
   // event constants
   const Double_t MaxVz(55.);
-  const Double_t MaxTrgEta(0.9);
-  const Double_t MinTrgEt(9.);
-  const Double_t MaxTrgEt(20.);
+  //const Double_t MaxTrgEta(0.9);
+  const Double_t MaxTrgEta(2.);
+  //const Double_t MinTrgEt(9.);
+  //const Double_t MaxTrgEt(20.);
+  const Double_t MinTrgEt(0.);
+  const Double_t MaxTrgEt(100.);
   const Double_t MinTrgTsp(3.);
   const Double_t MaxTrgTsp(100.);
 
@@ -58,8 +61,10 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   // misc. constants
   const Double_t pi(TMath::Pi());
   const Double_t RecoilDf(pi / 4.);
-  const Double_t nPtBins(20);
-  const Double_t pTbins[21] = {-1., -0.6, -0.2, 0., 0.2, 0.6, 1., 1.5, 2., 3., 4., 6., 9., 12., 15., 20., 30., 40., 60., 80., 100.};
+  const Double_t nPtBinsX(36);
+  const Double_t nPtBinsY(36);
+  const Double_t pTbinsX[37] = {-1., -0.8, -0.6, -0.4, -0.2, 0., 0.2, 0.4, 0.6, 0.8, 1., 1.5, 2., 2.5, 3., 3.5, 4., 5., 6., 7., 8., 9., 10., 12., 14., 16., 18., 20., 22.5, 25., 27.5, 30., 35., 40., 50., 60., 80.};
+  const Double_t pTbinsY[37] = {-1., -0.8, -0.6, -0.4, -0.2, 0., 0.2, 0.4, 0.6, 0.8, 1., 1.5, 2., 2.5, 3., 3.5, 4., 5., 6., 7., 8., 9., 10., 12., 14., 16., 18., 20., 22.5, 25., 27.5, 30., 35., 40., 50., 60., 80.};
   cout << "    Opening files and grabbing trees..." << endl;
 
 
@@ -295,7 +300,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   const UInt_t   aNum(500);
   const UInt_t   hNum(100);
   const UInt_t   fNum(360);
-  const UInt_t   pNum(550);
+  const UInt_t   pNum(830);
   const UInt_t   qNum(600);
   const UInt_t   rNum(600);
   const UInt_t   sNum(600);
@@ -305,7 +310,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   const Double_t aBin[2] = {0., 5.};
   const Double_t hBin[2] = {-5., 5.};
   const Double_t fBin[2] = {-2.*pi, 2.*pi};
-  const Double_t pBin[2] = {-10., 100.};
+  const Double_t pBin[2] = {-3., 80.};
   const Double_t qBin[2] = {0., 3.};
   const Double_t rBin[2] = {0., 3.};
   const Double_t sBin[2] = {0., 3.};
@@ -313,16 +318,16 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   // results
   hEfficiencyA    = new TH1D("hEfficiencyA", "Efficiency, #epsilon(A_{jet}) = N_{det}(A_{jet})/N_{par}(A_{jet})", aNum, aBin[0], aBin[1]);
   if (UseVariablePtBins)
-    hEfficiencyPt = new TH1D("hEfficiencyPt", "Efficiency, #epsilon(p_{T}^{jet}) = N_{det}(p_{T}^{jet})/N_{par}(p_{T}^{jet})", nPtBins, pTbins);
+    hEfficiencyPt = new TH1D("hEfficiencyPt", "Efficiency, #epsilon(p_{T}^{jet}) = N_{det}(p_{T}^{jet})/N_{par}(p_{T}^{jet})", nPtBinsX, pTbinsX);
   else
     hEfficiencyPt = new TH1D("hEfficiencyPt", "Efficiency, #epsilon(p_{T}^{jet}) = N_{det}(p_{T}^{jet})/N_{par}(p_{T}^{jet})", pNum, pBin[0], pBin[1]);
   hResponseA      = new TH2D("hResponseA", "Response matrix, jet area; detector; particle", aNum, aBin[0], aBin[1], aNum, aBin[0], aBin[1]);
   hResponseAn     = new TH2D("hResponseAn", "Response matrix, jet area (normalized); detector; particle", aNum, aBin[0], aBin[1], aNum, aBin[0], aBin[1]);
   if (UseVariablePtBins) {
-    hResponsePt   = new TH2D("hResponsePt", "Response matrix, jet p_{T}; detector; particle", nPtBins, pTbins, nPtBins, pTbins);
-    hResponsePtN  = new TH2D("hResponsePtN", "Response matrix, jet p_{T} (normalized); detector; particle", nPtBins, pTbins, nPtBins, pTbins);
-    hResponsePtc  = new TH2D("hResponsePtc", "Response matrix, jet p_{T}^{corr}; detector; particle", nPtBins, pTbins, nPtBins, pTbins);
-    hResponsePtcN = new TH2D("hResponsePtcN", "Response matrix, jet p_{T}^{corr} (normalized); detector; particle", nPtBins, pTbins, nPtBins, pTbins);
+    hResponsePt   = new TH2D("hResponsePt", "Response matrix, jet p_{T}; detector; particle", nPtBinsX, pTbinsX, nPtBinsY, pTbinsY);
+    hResponsePtN  = new TH2D("hResponsePtN", "Response matrix, jet p_{T} (normalized); detector; particle", nPtBinsX, pTbinsX, nPtBinsY, pTbinsY);
+    hResponsePtc  = new TH2D("hResponsePtc", "Response matrix, jet p_{T}^{corr}; detector; particle", nPtBinsX, pTbinsX, nPtBinsY, pTbinsY);
+    hResponsePtcN = new TH2D("hResponsePtcN", "Response matrix, jet p_{T}^{corr} (normalized); detector; particle", nPtBinsX, pTbinsX, nPtBinsY, pTbinsY);
   }
   else {
     hResponsePt   = new TH2D("hResponsePt", "Response matrix, jet p_{T}; detector; particle", pNum, pBin[0], pBin[1], pNum, pBin[0], pBin[1]);
@@ -342,8 +347,8 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   hParArea        = new TH1D("hParArea", "Total no. of jets to match per A_{jet} bin (for efficiency)", aNum, aBin[0], aBin[1]);
   hDetArea        = new TH1D("hDetArea", "Total no. of jets matched per A_{jet} bin (for efficiency, no smearing)", aNum, aBin[0], aBin[1]);
   if (UseVariablePtBins) {
-    hParPtCorr    = new TH1D("hParPtCorr", "Total no. of jets to match per p_{T}^{corr} bin (for efficiency)", nPtBins, pTbins);
-    hDetPtCorr    = new TH1D("hDetPtCorr", "Total no. of jets matched per p_{T}^{corr} bin (for efficiency, no smearing)", nPtBins, pTbins);
+    hParPtCorr    = new TH1D("hParPtCorr", "Total no. of jets to match per p_{T}^{corr} bin (for efficiency)", nPtBinsX, pTbinsX);
+    hDetPtCorr    = new TH1D("hDetPtCorr", "Total no. of jets matched per p_{T}^{corr} bin (for efficiency, no smearing)", nPtBinsX, pTbinsX);
   }
   else {
     hParPtCorr    = new TH1D("hParPtCorr", "Total no. of jets to match per p_{T}^{corr} bin (for efficiency)", pNum, pBin[0], pBin[1]);
@@ -354,8 +359,8 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   hJetEta[0]      = new TH1D("hJetEtaP", "Jet eta, particle", hNum, hBin[0], hBin[1]);
   hJetPhi[0]      = new TH1D("hJetPhiP", "Jet phi, particle", fNum, fBin[0], fBin[1]);
   if (UseVariablePtBins) {
-    hJetPt[0]     = new TH1D("hJetPtP", "Jet p_{T}, particle", nPtBins, pTbins);
-    hJetPtCorr[0] = new TH1D("hJetPtCorrP", "Jet p_{T}^{corr}, particle", nPtBins, pTbins);
+    hJetPt[0]     = new TH1D("hJetPtP", "Jet p_{T}, particle", nPtBinsX, pTbinsX);
+    hJetPtCorr[0] = new TH1D("hJetPtCorrP", "Jet p_{T}^{corr}, particle", nPtBinsX, pTbinsX);
   }
   else {
     hJetPt[0]     = new TH1D("hJetPtP", "Jet p_{T}, particle", pNum, pBin[0], pBin[1]);
@@ -367,8 +372,8 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   hJetEta[1]      = new TH1D("hJetEtaD", "Jet eta, detector", hNum, hBin[0], hBin[1]);
   hJetPhi[1]      = new TH1D("hJetPhiD", "Jet phi, detector", fNum, fBin[0], fBin[1]);
   if (UseVariablePtBins) {
-    hJetPt[1]     = new TH1D("hJetPtD", "Jet p_{T}, detector", nPtBins, pTbins);
-    hJetPtCorr[1] = new TH1D("hJetPtCorrD", "Jet p_{T}^{corr}, detector", nPtBins, pTbins);
+    hJetPt[1]     = new TH1D("hJetPtD", "Jet p_{T}, detector", nPtBinsX, pTbinsX);
+    hJetPtCorr[1] = new TH1D("hJetPtCorrD", "Jet p_{T}^{corr}, detector", nPtBinsX, pTbinsX);
   }
   else {
     hJetPt[1]     = new TH1D("hJetPtD", "Jet p_{T}, detector", pNum, pBin[0], pBin[1]);
@@ -386,8 +391,8 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   hJetEta[2]      = new TH1D("hJetEtaC", "Jet eta, candidates", hNum, hBin[0], hBin[1]);
   hJetPhi[2]      = new TH1D("hJetPhiC", "Jet phi, candidates", fNum, fBin[0], fBin[1]);
   if (UseVariablePtBins) {
-    hJetPt[2]     = new TH1D("hJetPtC", "Jet p_{T}, candidates", nPtBins, pTbins);
-    hJetPtCorr[2] = new TH1D("hJetPtCorrC", "Jet p_{T}^{corr}, candidates", nPtBins, pTbins);
+    hJetPt[2]     = new TH1D("hJetPtC", "Jet p_{T}, candidates", nPtBinsX, pTbinsX);
+    hJetPtCorr[2] = new TH1D("hJetPtCorrC", "Jet p_{T}^{corr}, candidates", nPtBinsX, pTbinsX);
   }
   else {
     hJetPt[2]     = new TH1D("hJetPtC", "Jet p_{T}, candidates", pNum, pBin[0], pBin[1]);
@@ -405,8 +410,8 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   hJetEta[3]      = new TH1D("hJetEtaM", "Jet eta, matches", hNum, hBin[0], hBin[1]);
   hJetPhi[3]      = new TH1D("hJetPhiM", "Jet phi, matches", fNum, fBin[0], fBin[1]);
   if (UseVariablePtBins) {
-    hJetPt[3]     = new TH1D("hJetPtM", "Jet p_{T}, matches", nPtBins, pTbins);
-    hJetPtCorr[3] = new TH1D("hJetPtCorrM", "Jet p_{T}^{corr}, matches", nPtBins, pTbins);
+    hJetPt[3]     = new TH1D("hJetPtM", "Jet p_{T}, matches", nPtBinsX, pTbinsX);
+    hJetPtCorr[3] = new TH1D("hJetPtCorrM", "Jet p_{T}^{corr}, matches", nPtBinsX, pTbinsX);
   }
   else {
     hJetPt[3]     = new TH1D("hJetPtM", "Jet p_{T}, matches", pNum, pBin[0], pBin[1]);
@@ -424,8 +429,8 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   hJetEta[4]      = new TH1D("hJetEtaJ", "Jet eta, junk", hNum, hBin[0], hBin[1]);
   hJetPhi[4]      = new TH1D("hJetPhiJ", "Jet phi, junk", fNum, fBin[0], fBin[1]);
   if (UseVariablePtBins) {
-    hJetPt[4]     = new TH1D("hJetPtJ", "Jet p_{T}, junk", nPtBins, pTbins);
-    hJetPtCorr[4] = new TH1D("hJetPtCorrJ", "Jet p_{T}^{corr}, junk", nPtBins, pTbins);
+    hJetPt[4]     = new TH1D("hJetPtJ", "Jet p_{T}, junk", nPtBinsX, pTbinsX);
+    hJetPtCorr[4] = new TH1D("hJetPtCorrJ", "Jet p_{T}^{corr}, junk", nPtBinsX, pTbinsX);
   }
   else {
     hJetPt[4]     = new TH1D("hJetPtJ", "Jet p_{T}, junk", pNum, pBin[0], pBin[1]);
@@ -443,8 +448,8 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   hJetEta[5]      = new TH1D("hJetEtaY", "Jet eta, mystery", hNum, hBin[0], hBin[1]);
   hJetPhi[5]      = new TH1D("hJetPhiY", "Jet phi, mystery", fNum, fBin[0], fBin[1]);
   if (UseVariablePtBins) {
-    hJetPt[5]     = new TH1D("hJetPtY", "Jet p_{T}, mystery", nPtBins, pTbins);
-    hJetPtCorr[5] = new TH1D("hJetPtCorrY", "Jet p_{T}^{corr}, mystery", nPtBins, pTbins);
+    hJetPt[5]     = new TH1D("hJetPtY", "Jet p_{T}, mystery", nPtBinsX, pTbinsX);
+    hJetPtCorr[5] = new TH1D("hJetPtCorrY", "Jet p_{T}^{corr}, mystery", nPtBinsX, pTbinsX);
   }
   else {
     hJetPt[5]     = new TH1D("hJetPtY", "Jet p_{T}, mystery", pNum, pBin[0], pBin[1]);
@@ -462,8 +467,8 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   hJetEta[6]      = new TH1D("hJetEtaN", "Jet eta, not matches (particle)", hNum, hBin[0], hBin[1]);
   hJetPhi[6]      = new TH1D("hJetPhiN", "Jet phi, not matches (particle)", fNum, fBin[0], fBin[1]);
   if (UseVariablePtBins) {
-    hJetPt[6]     = new TH1D("hJetPtN", "Jet p_{T}, not matches (particle)", nPtBins, pTbins);
-    hJetPtCorr[6] = new TH1D("hJetPtCorrN", "Jet p_{T}^{corr}, not matches (particle)", nPtBins, pTbins);
+    hJetPt[6]     = new TH1D("hJetPtN", "Jet p_{T}, not matches (particle)", nPtBinsX, pTbinsX);
+    hJetPtCorr[6] = new TH1D("hJetPtCorrN", "Jet p_{T}^{corr}, not matches (particle)", nPtBinsX, pTbinsX);
   }
   else {
     hJetPt[6]     = new TH1D("hJetPtN", "Jet p_{T}, not matches (particle)", pNum, pBin[0], pBin[1]);
