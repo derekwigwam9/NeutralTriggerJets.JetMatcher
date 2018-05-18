@@ -7,6 +7,7 @@
 //
 // NOTE: Configuration = 0, RFF configuration
 //       Configuration = 1, FF configuration
+//       Configuration = 2, both (1st RFF, then FF)
 
 
 #include <iostream>
@@ -21,19 +22,21 @@ using namespace std;
 
 
 // constants
-static const UInt_t   NHistRFF(8);
 static const UInt_t   NHistFF(7);
+static const UInt_t   NHistRFF(8);
+static const UInt_t   NHistAll(NHistRFF + NHistFF);
 static const UInt_t   NTotal(10);
-static const Double_t NormsRFF[NHistRFF] = {1., 5., 36., 204., 628., 2807., 7547., 3855.};
 static const Double_t NormsFF[NHistFF]   = {2., 37., 163., 463., 2419., 8762., 4455.};
-static const Double_t WeightsRFF[NTotal] = {1.0, 3.501425e-01, 1.395103e-01, 1.326444e-01, 2.801546e-02, 1.031377e-02, 8.210314e-03, 1.985107e-03, 8.054588e-05, 1.449037e-05};
+static const Double_t NormsRFF[NHistRFF] = {1., 5., 36., 204., 628., 2807., 7547., 3855.};
+static const Double_t NormsAll[NHistAll] = {1., 5., 36., 204., 628., 2807., 7547., 3855., 2., 37., 163., 463., 2419., 8762., 4455.};
 static const Double_t WeightsFF[NTotal]  = {1.0, 3.361596e-01, 1.401161e-01, 1.337302e-01, 2.895246e-02, 1.042577e-02, 8.294575e-03, 2.064352e-03, 8.088693e-05, 1.417116e-05};
+static const Double_t WeightsRFF[NTotal] = {1.0, 3.501425e-01, 1.395103e-01, 1.326444e-01, 2.801546e-02, 1.031377e-02, 8.210314e-03, 1.985107e-03, 8.054588e-05, 1.449037e-05};
 
 // options
-static const UInt_t NHist(8);
-static const UInt_t Configuration(0);
+static const UInt_t NHist(NHistAll);
+static const UInt_t Configuration(2);
 static const Bool_t DoIntNorm(false);
-static const Bool_t VariableBins(true);
+static const Bool_t VariableBins(false);
 
 
 
@@ -44,10 +47,10 @@ void CalculateReconstructionEfficiency() {
   cout << "\n  Beginning reconstruction efficiency calcualation..." << endl;
 
   // io parameters
-  const TString sOut("pp200r9rff.recoEff.et9vz55had.r03a02rm1chrg.dr03q15.d15m5y2018.root");
-  const TString sIn[NHist] = {"output/pp200r9pt4rff.matchNoNormVariableBins.et920vz55had.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt5rff.matchNoNormVariableBins.et920vz55had.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt7rff.matchNoNormVariableBins.et920vz55had.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt9rff.matchNoNormVariableBins.et920vz55had.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt11rff.matchNoNormVariableBins.et920vz55had.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt15rff.matchNoNormVariableBins.et920vz55had.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt25rff.matchNoNormVariableBins.et920vz55had.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt35rff.matchNoNormVariableBins.et920vz55had.r03a02rm1chrg.dr03q15.root"};
-  const TString sPar[NHist] = {"EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr"};
-  const TString sDet[NHist] = {"EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr"};
+  const TString sOut("pp200r9embed.recoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.d18m5y2018.root");
+  const TString sIn[NHist] = {"output/pp200r9pt4rff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt5rff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt7rff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt9rff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt11rff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt15rff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt25rff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt35rff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt5ff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt7ff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt9ff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt11ff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt15ff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt25ff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt35ff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root"};
+  const TString sPar[NHist] = {"EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr"};
+  const TString sDet[NHist] = {"EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr"};
 
 
   // open files
@@ -92,6 +95,19 @@ void CalculateReconstructionEfficiency() {
         hPar[iHist] -> Scale(WeightsFF[(NTotal - NHist) + iHist]);
         hDet[iHist] -> Scale(WeightsFF[(NTotal - NHist) + iHist]);
         normer += NormsFF[iHist] * WeightsFF[(NTotal - NHist) + iHist];
+        break;
+      case 2:
+        const Bool_t isRFF = (iHist < NHistRFF);
+        if (isRFF) {
+          hPar[iHist] -> Scale(WeightsRFF[(NTotal - NHistRFF) + iHist]);
+          hDet[iHist] -> Scale(WeightsRFF[(NTotal - NHistRFF) + iHist]);
+          normer += NormsAll[iHist] * WeightsRFF[(NTotal - NHistRFF) + iHist];
+        }
+        else {
+          hPar[iHist] -> Scale(WeightsFF[(NTotal - NHistFF) + (iHist - NHistRFF)]);
+          hDet[iHist] -> Scale(WeightsFF[(NTotal - NHistFF) + (iHist - NHistRFF)]);
+          normer += NormsAll[iHist] * WeightsFF[(NTotal - NHistFF) + (iHist - NHistRFF)];
+        }
         break;
     }
   }
@@ -266,6 +282,7 @@ void CalculateReconstructionEfficiency() {
   fOut  -> cd();
   hSumP -> Write();
   hSumD -> Write();
+  hEff  -> Write();
   fOut  -> Close();
   for (UInt_t iHist = 0; iHist < NHist; iHist++) {
     fIn[iHist] -> cd();
