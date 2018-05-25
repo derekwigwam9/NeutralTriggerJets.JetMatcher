@@ -29,7 +29,7 @@ static const Double_t WeightsFF[NTotal]  = {1.0, 3.361596e-01, 1.401161e-01, 1.3
 static const Double_t WeightsRFF[NTotal] = {1.0, 3.501425e-01, 1.395103e-01, 1.326444e-01, 2.801546e-02, 1.031377e-02, 8.210314e-03, 1.985107e-03, 8.054588e-05, 1.449037e-05};
 
 // io constants
-static const Bool_t  VariableBins(true);
+static const Bool_t  VariableBins(false);
 static const Float_t JetResParameter(0.3);
 static const TString SParticle("ParticleJets/hJetPtCorrP");
 static const TString SDetector("MatchJets/hJetPtCorrM");
@@ -46,9 +46,9 @@ void PrepareForUnfolding() {
   cout << "\n  Beginning preparation for unfolding..." << endl;
 
   // io parameters
-  const TString sOut("test.root");
-  const TString SInFF[NHistFF]   = {"output/pp200r9pt5ff.forRecoEff.noParCutsAndNoQtMaxCutBetterBins.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt7ff.forRecoEff.noParCutsAndNoQtMaxCutBetterBins.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt9ff.forRecoEff.noParCutsAndNoQtMaxCutBetterBins.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt11ff.forRecoEff.noParCutsAndNoQtMaxCutBetterBins.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt15ff.forRecoEff.noParCutsAndNoQtMaxCutBetterBins.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt25ff.forRecoEff.noParCutsAndNoQtMaxCutBetterBins.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt35ff.forRecoEff.noParCutsAndNoQtMaxCutBetterBins.et920vz55dfPi.r03a02rm1chrg.dr03q15.root"};
-  const TString SInRFF[NHistRFF] = {"output/pp200r9pt4rff.forRecoEff.noParCutsAndNoQtMaxCutBetterBins.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt5rff.forRecoEff.noParCutsAndNoQtMaxCutBetterBins.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt7rff.forRecoEff.noParCutsAndNoQtMaxCutBetterBins.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt9rff.forRecoEff.noParCutsAndNoQtMaxCutBetterBins.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt11rff.forRecoEff.noParCutsAndNoQtMaxCutBetterBins.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt15rff.forRecoEff.noParCutsAndNoQtMaxCutBetterBins.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt25rff.forRecoEff.noParCutsAndNoQtMaxCutBetterBins.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt35rff.forRecoEff.noParCutsAndNoQtMaxCutBetterBins.et920vz55dfPi.r03a02rm1chrg.dr03q15.root"};
+  const TString sOut("pp200r9embed.unfoldingPtBin01.et9vz55.r03a02rm1chrg.dr03q15.root");
+  const TString SInFF[NHistFF]   = {"output/pp200r9pt5ff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt7ff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt9ff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt11ff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt15ff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt25ff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt35ff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root"};
+  const TString SInRFF[NHistRFF] = {"output/pp200r9pt4rff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt5rff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt7rff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt9rff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt11rff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt15rff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt25rff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt35rff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root"};
 
 
   // open files
@@ -162,6 +162,20 @@ void PrepareForUnfolding() {
         hJetsFF[iHistFF][1]   -> SetBinError(iBinD, dJetErr / dWidth);
         hJetEffFF[iHistFF][1] -> SetBinError(iBinD, dEffErr / dWidth);
       }
+
+      const UInt_t nBinResX = hResponseFF[iHistFF] -> GetNbinsX();
+      const UInt_t nBinResY = hResponseFF[iHistFF] -> GetNbinsY();
+      for (UInt_t iBinResX = 1; iBinResX < (nBinResX + 1); iBinResX++) {
+        for (UInt_t iBinResY = 1; iBinResY < (nBinResY + 1); iBinResY++) {
+          const Double_t binVal = hResponseFF[iHistFF] -> GetBinContent(iBinResX, iBinResY);
+          const Double_t binErr = hResponseFF[iHistFF] -> GetBinError(iBinResX, iBinResY);
+          const Double_t xWidth = hResponseFF[iHistFF] -> GetXaxis() -> GetBinWidth(iBinResX);
+          const Double_t yWidth = hResponseFF[iHistFF] -> GetYaxis() -> GetBinWidth(iBinResY);
+          const Double_t dArea  = xWidth * yWidth;
+          hResponseFF[iHistFF] -> SetBinContent(iBinResX, iBinResY, binVal / dArea);
+          hResponseFF[iHistFF] -> SetBinError(iBinResX, iBinResY, binErr / dArea);
+        }
+      }
     }  // end FF loop
     for (UInt_t iHistRFF = 0; iHistRFF < NHistRFF; iHistRFF++) {
       const UInt_t nBinP = hJetsRFF[iHistRFF][0] -> GetNbinsX();
@@ -187,6 +201,20 @@ void PrepareForUnfolding() {
         hJetEffRFF[iHistRFF][1] -> SetBinContent(iBinD, dEffVal / dWidth);
         hJetsRFF[iHistRFF][1]   -> SetBinError(iBinD, dJetErr / dWidth);
         hJetEffRFF[iHistRFF][1] -> SetBinError(iBinD, dEffErr / dWidth);
+      }
+
+      const UInt_t nBinResX = hResponseRFF[iHistRFF] -> GetNbinsX();
+      const UInt_t nBinResY = hResponseRFF[iHistRFF] -> GetNbinsY();
+      for (UInt_t iBinResX = 1; iBinResX < (nBinResX + 1); iBinResX++) {
+        for (UInt_t iBinResY = 1; iBinResY < (nBinResY + 1); iBinResY++) {
+          const Double_t binVal = hResponseRFF[iHistRFF] -> GetBinContent(iBinResX, iBinResY);
+          const Double_t binErr = hResponseRFF[iHistRFF] -> GetBinError(iBinResX, iBinResY);
+          const Double_t xWidth = hResponseRFF[iHistRFF] -> GetXaxis() -> GetBinWidth(iBinResX);
+          const Double_t yWidth = hResponseRFF[iHistRFF] -> GetYaxis() -> GetBinWidth(iBinResY);
+          const Double_t dArea  = xWidth * yWidth;
+          hResponseRFF[iHistRFF] -> SetBinContent(iBinResX, iBinResY, binVal / dArea);
+          hResponseRFF[iHistRFF] -> SetBinError(iBinResX, iBinResY, binErr / dArea);
+        }
       }
     }  // end RFF loop
   }
