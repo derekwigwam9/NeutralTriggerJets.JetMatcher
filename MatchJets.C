@@ -11,6 +11,7 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TString.h"
+#include "TProfile.h"
 #include "TDirectory.h"
 
 using namespace std;
@@ -42,18 +43,14 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
 
   // event constants
   const Double_t MaxVz(55.);
-  //const Double_t MaxTrgEta(0.9);
-  const Double_t MaxTrgEta(2.);
-  //const Double_t MinTrgEt(9.);
-  //const Double_t MaxTrgEt(20.);
-  const Double_t MinTrgEt(0.);
-  const Double_t MaxTrgEt(100.);
+  const Double_t MaxTrgEta(0.9);
+  const Double_t MinTrgEt(9.);
+  const Double_t MaxTrgEt(20.);
   const Double_t MinTrgTsp(3.);
   const Double_t MaxTrgTsp(100.);
 
   // matching constants
   const Double_t Qmin(0.15);    // fraction of jet pT must be above Qmin
-  const Double_t Qmax(1.5);     // fraction of jet pT must be below Qmax
   const Double_t HardCut(10.);  // jets w/ pT > HardCut are considered 'hard'
   const Double_t Pcut(0.);      // pTpar must be above this
   const Double_t Dcut(0.);      // pTdet must be above this
@@ -291,6 +288,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   TH1D *hJetDr[NMatchTypes];
   TH1D *hJetS[NMatchTypes];
   TH1D *hJetDp[NMatchTypes];
+  TH1D *hJetDq[NMatchTypes];
   TH2D *hJetQtVsDr[NMatchTypes];
   TH2D *hJetSvsDr[NMatchTypes];
 
@@ -300,11 +298,12 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   const UInt_t   aNum(500);
   const UInt_t   hNum(100);
   const UInt_t   fNum(360);
-  const UInt_t   pNum(830);
+  const UInt_t   pNum(83);
   const UInt_t   qNum(600);
   const UInt_t   rNum(600);
   const UInt_t   sNum(600);
   const UInt_t   dNum(100);
+  const UInt_t   jNum(200);
   const Double_t mBin[2] = {0., 200.};
   const Double_t nBin[2] = {0., 100};
   const Double_t aBin[2] = {0., 5.};
@@ -315,6 +314,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   const Double_t rBin[2] = {0., 3.};
   const Double_t sBin[2] = {0., 3.};
   const Double_t dBin[2] = {-50., 50.};
+  const Double_t jBin[2] = {-10., 10.};
   // results
   hEfficiencyA    = new TH1D("hEfficiencyA", "Efficiency, #epsilon(A_{jet}) = N_{det}(A_{jet})/N_{par}(A_{jet})", aNum, aBin[0], aBin[1]);
   if (UseVariablePtBins)
@@ -384,6 +384,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   hJetDr[0]       = new TH1D("hJetDrD", "Jet #Deltar, detector (normalization different!)", rNum, rBin[0], rBin[1]);
   hJetS[0]        = new TH1D("hJetSd", "Jet s=A_{det}/A_{par}, detector (normalization different!)", sNum, sBin[0], sBin[1]);
   hJetDp[0]       = new TH1D("hJetDpD", "Jet #Deltap_{T}=p_{T}^{det}-p_{T}^{par}, detector (normalization different!)", dNum, dBin[0], dBin[1]);
+  hJetDq[0]       = new TH1D("hJetDqD", "Jet #Deltaq_{T}=#Deltap_{T}/p_{T}=q_{T}-1, detector (normalization different!)", jNum, jBin[0], jBin[1]);
   hJetQtVsDr[0]   = new TH2D("hJetQtVsDrD", "Jet q_{T} vs. #Deltar, detector (normalization different!); #Deltar; q_{T}", rNum, rBin[0], rBin[1], qNum, qBin[0], qBin[1]);
   hJetSvsDr[0]    = new TH2D("hJetSvsDrD", "Jet s vs. #Deltar, detector (normalization different!); #Deltar; s", rNum, rBin[0], rBin[1], sNum, sBin[0], sBin[1]);
   // candidate matches
@@ -403,6 +404,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   hJetDr[1]       = new TH1D("hJetDrC", "Jet #Deltar, candidates", rNum, rBin[0], rBin[1]);
   hJetS[1]        = new TH1D("hJetSc", "Jet s=A_{cand}/A_{par}, candidates", sNum, sBin[0], sBin[1]);
   hJetDp[1]       = new TH1D("hJetDpC", "Jet #Deltap_{T}=p_{T}^{cand}-p_{T}^{par}, candidates (normalization different!)", dNum, dBin[0], dBin[1]);
+  hJetDq[1]       = new TH1D("hJetDqC", "Jet #Deltaq_{T}=#Deltap_{T}/p_{T}=q_{T}-1, candidates (normalization different!)", jNum, jBin[0], jBin[1]);
   hJetQtVsDr[1]   = new TH2D("hJetQtVsDrC", "Jet q_{T} vs. #Deltar, candidates; #Deltar; q_{T}", rNum, rBin[0], rBin[1], qNum, qBin[0], qBin[1]);
   hJetSvsDr[1]    = new TH2D("hJetSvsDrC", "Jet s vs. #Deltar, candidates; #Deltar; s", rNum, rBin[0], rBin[1], sNum, sBin[0], sBin[1]);
   // matches
@@ -422,6 +424,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   hJetDr[2]       = new TH1D("hJetDrM", "Jet #Deltar, matches", rNum, rBin[0], rBin[1]);
   hJetS[2]        = new TH1D("hJetSm", "Jet s=A_{match}/A_{par}, matches", sNum, sBin[0], sBin[1]);
   hJetDp[2]       = new TH1D("hJetDpM", "Jet #Deltap_{T}=p_{T}^{match}-p_{T}^{par}, matches (normalization different!)", dNum, dBin[0], dBin[1]);
+  hJetDq[2]       = new TH1D("hJetDqM", "Jet #Deltaq_{T}=#Deltap_{T}/p_{T}=q_{T}-1, matches (normalization different!)", jNum, jBin[0], jBin[1]);
   hJetQtVsDr[2]   = new TH2D("hJetQtVsDrM", "Jet q_{T} vs. #Deltar, matches", rNum, rBin[0], rBin[1], qNum, qBin[0], qBin[1]);
   hJetSvsDr[2]    = new TH2D("hJetSvsDrM", "Jet s vs. #Deltar, matches", rNum, rBin[0], rBin[1], sNum, sBin[0], sBin[1]);
   // junk (detector jets that weren't matched)
@@ -441,6 +444,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   hJetDr[3]       = new TH1D("hJetDrJ", "Jet #Deltar, junk (normalization different!)", rNum, rBin[0], rBin[1]);
   hJetS[3]        = new TH1D("hJetSj", "Jet s=A_{junk}/A_{par}, junk (normalization different!)", sNum, sBin[0], sBin[1]);
   hJetDp[3]       = new TH1D("hJetDpJ", "Jet #Deltap_{T}=p_{T}^{junk}-p_{T}^{par}, junk (normalization different!)", dNum, dBin[0], dBin[1]);
+  hJetDq[3]       = new TH1D("hJetDqJ", "Jet #Deltaq_{T}=#Deltap_{T}/p_{T}=q_{T}-1, junk (normalization different!)", jNum, jBin[0], jBin[1]);
   hJetQtVsDr[3]   = new TH2D("hJetQtVsDrJ", "Jet q_{T} vs. #Deltar, junk (normalization different!)", rNum, rBin[0], rBin[1], qNum, qBin[0], qBin[1]);
   hJetSvsDr[3]    = new TH2D("hJetSvsDrJ", "Jet s vs. #Deltar, junk (normalization different!)", rNum, rBin[0], rBin[1], sNum, sBin[0], sBin[1]);
   // mystery (jets w/ dR > Rjet and |qT-1|<.1)
@@ -460,6 +464,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   hJetDr[4]       = new TH1D("hJetDrY", "Jet #Deltar, mystery", rNum, rBin[0], rBin[1]);
   hJetS[4]        = new TH1D("hJetSy", "Jet s=A_{?}/A_{par}, mystery", sNum, sBin[0], sBin[1]);
   hJetDp[4]       = new TH1D("hJetDpY", "Jet #Deltap_{T}=p_{T}^{?}-p_{T}^{par}, mystery (normalization different!)", dNum, dBin[0], dBin[1]);
+  hJetDq[4]       = new TH1D("hJetDqY", "Jet #Deltaq_{T}=#Deltap_{T}/p_{T}=q_{T}-1, mystery (normalization different!)", jNum, jBin[0], jBin[1]);
   hJetQtVsDr[4]   = new TH2D("hJetQtVsDrY", "Jet q_{T} vs. #Deltar, mystery", rNum, rBin[0], rBin[1], qNum, qBin[0], qBin[1]);
   hJetSvsDr[4]    = new TH2D("hJetSvsDrY", "Jet s vs. #Deltar, mystery", rNum, rBin[0], rBin[1], sNum, sBin[0], sBin[1]);
   // not matches (particle jets that weren't matched)
@@ -509,7 +514,31 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
     hJetDr[i] -> Sumw2();
     hJetS[i]  -> Sumw2();
     hJetDp[i] -> Sumw2();
+    hJetDq[i] -> Sumw2();
   }
+
+  // make profiles
+  TProfile *pResponseA;
+  TProfile *pResponseAn;
+  TProfile *pResponsePt;
+  TProfile *pResponsePtN;
+  TProfile *pResponsePtc;
+  TProfile *pResponsePtcN;
+  pResponseA      = new TProfile("pResponseA", "Response matrix, jet area; detector; particle", aNum, aBin[0], aBin[1], "S");
+  pResponseAn     = new TProfile("pResponseAn", "Response matrix, jet area (normalized); detector; particle", aNum, aBin[0], aBin[1], "S");
+  if (UseVariablePtBins) {
+    pResponsePt   = new TProfile("pResponsePt", "Response matrix, jet p_{T}; detector; particle", nPtBinsX, pTbinsX, "S");
+    pResponsePtN  = new TProfile("pResponsePtN", "Response matrix, jet p_{T} (normalized); detector; particle", nPtBinsX, pTbinsX, "S");
+    pResponsePtc  = new TProfile("pResponsePtc", "Response matrix, jet p_{T}^{corr}; detector; particle", nPtBinsX, pTbinsX, "S");
+    pResponsePtcN = new TProfile("pResponsePtcN", "Response matrix, jet p_{T}^{corr} (normalized); detector; particle", nPtBinsX, pTbinsX, "S");
+  }
+  else {
+    pResponsePt   = new TProfile("pResponsePt", "Response matrix, jet p_{T}; detector; particle", pNum, pBin[0], pBin[1], "S");
+    pResponsePtN  = new TProfile("pResponsePtN", "Response matrix, jet p_{T} (normalized); detector; particle", pNum, pBin[0], pBin[1], "S");
+    pResponsePtc  = new TProfile("pResponsePtc", "Response matrix, jet p_{T}^{corr}; detector; particle", pNum, pBin[0], pBin[1], "S");
+    pResponsePtcN = new TProfile("pResponsePtcN", "Response matrix, jet p_{T}^{corr} (normalized); detector; particle", pNum, pBin[0], pBin[1], "S");
+  }
+
 
 
   // check to make sure there are a reasonable no. of events
@@ -653,12 +682,11 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
     UInt_t nDjets   = (UInt_t) dJetEta -> size();
     for (UInt_t j = 0; j < nPjets; j++) {
 
-      const Double_t pA   = pJetArea   -> at(j);
-      const Double_t pH   = pJetEta    -> at(j);
-      const Double_t pF   = pJetPhi    -> at(j);
-      const Double_t pPt  = pJetPt     -> at(j);
-      //const Double_t gPtc = pJetPtCorr -> at(j);
-      const Double_t pPtc = pPt - (pRho * pA);  // quick fix [11.27.2017] 
+      const Double_t pA   = pJetArea -> at(j);
+      const Double_t pH   = pJetEta  -> at(j);
+      const Double_t pF   = pJetPhi  -> at(j);
+      const Double_t pPt  = pJetPt   -> at(j);
+      const Double_t pPtc = pPt - (pRho * pA);
       if (pPt > HardCut)
         ++nHardP;
 
@@ -669,10 +697,11 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       const Double_t pDfCut    = TMath::Abs(pDf - pi);
       const Bool_t   isRecoilP = (pDfCut < RecoilDf);
 
-      if (pPt < MinJetPt)
-        continue;
-      if (pA < MinArea)
-        continue;
+      // TEST [05.21.2018]
+      //if (pPt < MinJetPt)
+        //continue;
+      //if (pA < MinArea)
+        //continue;
       if (!isRecoilP)
         continue;
 
@@ -703,18 +732,18 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       Double_t bQt    = 0.;
       Double_t bS     = 0.;
       Double_t bDp    = 0.;
+      Double_t bDq    = 0.;
       Double_t bDr    = 999.;
 
       // detector jet loop
       Bool_t isMatched = false;
       for (UInt_t k = 0; k < nDjets; k++) {
 
-        const Double_t dA   = dJetArea   -> at(k);
-        const Double_t dH   = dJetEta    -> at(k);
-        const Double_t dF   = dJetPhi    -> at(k);
-        const Double_t dPt  = dJetPt     -> at(k);
-        //const Double_t uPtc = dJetPtCorr -> at(k);
-        const Double_t dPtc = dPt - (dRho * dA);  // quick fix [11.27.2017]
+        const Double_t dA   = dJetArea -> at(k);
+        const Double_t dH   = dJetEta  -> at(k);
+        const Double_t dF   = dJetPhi  -> at(k);
+        const Double_t dPt  = dJetPt   -> at(k);
+        const Double_t dPtc = dPt - (dRho * dA);
 
         // calculate delta phi
         Double_t dDf = dF - dTrgPhi;
@@ -732,6 +761,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
         Double_t qT   = dPt / pPt;
         Double_t s    = dA / pA;
         Double_t dP   = dPt - pPt;
+        Double_t dQ   = dP / pPt;
         Double_t dHpd = dH - pH;
         Double_t dFpd = dF - pF;
         Double_t dR   = sqrt((dHpd * dHpd) + (dFpd * dFpd));
@@ -744,13 +774,14 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
         hJetDr[0]     -> Fill(dR);
         hJetS[0]      -> Fill(s);
         hJetDp[0]     -> Fill(dP);
+        hJetDq[0]     -> Fill(dQ);
         hJetQtVsDr[0] -> Fill(dR, qT);
         hJetSvsDr[0]  -> Fill(dR, s);
 
 
         Bool_t isBetter = false;
         Bool_t isInRcut = (dR < Rcut);
-        Bool_t isInQcut = ((qT > Qmin) && (qT < Qmax));
+        Bool_t isInQcut = (qT > Qmin);
         if (isInRcut && isInQcut && isInAcceptance) {
           isMatched = true;
           isBetter  = ((dR < bDr) && (qT > bQt));
@@ -766,6 +797,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
           hJetDr[1]       -> Fill(dR);
           hJetS[1]        -> Fill(s);
           hJetDp[1]       -> Fill(dP);
+          hJetDq[1]       -> Fill(dQ);
           hJetQtVsDr[1]   -> Fill(dR, qT);
           hJetSvsDr[1]    -> Fill(dR, s);
         }
@@ -775,6 +807,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
           hJetDr[3]     -> Fill(dR);
           hJetS[3]      -> Fill(s);
           hJetDp[3]     -> Fill(dP);
+          hJetDq[3]     -> Fill(dQ);
           hJetQtVsDr[3] -> Fill(dR, qT);
           hJetSvsDr[3]  -> Fill(dR, s);
         }
@@ -793,6 +826,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
           hJetDr[4]       -> Fill(dR);
           hJetS[4]        -> Fill(s);
           hJetDp[4]       -> Fill(dP);
+          hJetDq[4]       -> Fill(dQ);
           hJetQtVsDr[4]   -> Fill(dR, qT);
           hJetSvsDr[4]    -> Fill(dR, s);
         }
@@ -808,6 +842,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
           bQt    = qT;
           bS     = s;
           bDp    = dP;
+          bDq    = dQ;
           bDr    = dR;
         }
 
@@ -817,11 +852,17 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       // fill match histograms
       if (isMatched) {
         hResponseA      -> Fill(bA, pA);
+        pResponseA      -> Fill(bA, pA);
         hResponseAn     -> Fill(bA, pA);
+        pResponseAn     -> Fill(bA, pA);
         hResponsePt     -> Fill(bPt, pPt);
+        pResponsePt     -> Fill(bPt, pPt);
         hResponsePtN    -> Fill(bPt, pPt);
+        pResponsePtN    -> Fill(bPt, pPt);
         hResponsePtc    -> Fill(bPtc, pPtc);
+        pResponsePtc    -> Fill(bPtc, pPtc);
         hResponsePtcN   -> Fill(bPtc, pPtc);
+        pResponsePtcN   -> Fill(bPtc, pPtc);
         hDetArea        -> Fill(pA);
         hDetPtCorr      -> Fill(pPtc);
         hJetArea[3]     -> Fill(bA);
@@ -834,6 +875,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
         hJetDr[2]       -> Fill(bDr);
         hJetS[2]        -> Fill(bS);
         hJetDp[2]       -> Fill(bDp);
+        hJetDq[2]       -> Fill(bDq);
         hJetQtVsDr[2]   -> Fill(bDr, bQt);
         hJetSvsDr[2]    -> Fill(bDr, bS);
         matchIndices.push_back(bIndex);
@@ -862,12 +904,11 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
     UInt_t nHardD = 0;
     for (UInt_t j = 0; j < nDjets; j++) {
 
-      Double_t dA   = dJetArea   -> at(j);
-      Double_t dH   = dJetEta    -> at(j);
-      Double_t dF   = dJetPhi    -> at(j);
-      Double_t dPt  = dJetPt     -> at(j);
-      //Double_t uPtc = dJetPtCorr -> at(j);
-      Double_t dPtc = dPt - (dRho * dA);  // quick fix [11.27.2017]
+      Double_t dA   = dJetArea -> at(j);
+      Double_t dH   = dJetEta  -> at(j);
+      Double_t dF   = dJetPhi  -> at(j);
+      Double_t dPt  = dJetPt   -> at(j);
+      Double_t dPtc = dPt - (dRho * dA);
       if (dPt > HardCut)
         ++nHardD;
 
@@ -897,7 +938,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       // check if detector jet matches particle jet
       Bool_t isMatch = false;
       for (UInt_t k = 0; k < nMatched; k++) {
-        Int_t m = matchIndices.at(k);
+        UInt_t m = (UInt_t) matchIndices.at(k);
         if (j == m) {
           isMatch = true;
           break;
@@ -1062,11 +1103,17 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   hEfficiencyA  -> Write();
   hEfficiencyPt -> Write();
   hResponseA    -> Write();
+  pResponseA    -> Write();
   hResponseAn   -> Write();
+  pResponseAn   -> Write();
   hResponsePt   -> Write();
+  pResponsePt   -> Write();
   hResponsePtN  -> Write();
+  pResponsePtN  -> Write();
   hResponsePtc  -> Write();
+  pResponsePtc  -> Write();
   hResponsePtcN -> Write();
+  pResponsePtcN -> Write();
   dir[7]        -> cd();
   hRefmultP     -> Write();
   hRefmultD     -> Write();
@@ -1096,6 +1143,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
     hJetDr[i]     -> Write();
     hJetS[i]      -> Write();
     hJetDp[i]     -> Write();
+    hJetDq[i]     -> Write();
     hJetQtVsDr[i] -> Write();
     hJetSvsDr[i]  -> Write();
   }

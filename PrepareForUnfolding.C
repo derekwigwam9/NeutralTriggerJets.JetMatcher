@@ -15,6 +15,7 @@
 #include "TFile.h"
 #include "TMath.h"
 #include "TString.h"
+#include "TProfile.h"
 
 using namespace std;
 
@@ -36,6 +37,7 @@ static const TString SDetector("MatchJets/hJetPtCorrM");
 static const TString SParEff("EventInfo/hParPtCorr");
 static const TString SDetEff("EventInfo/hDetPtCorr");
 static const TString SResponse("hResponsePtc");
+static const TString SProfile("pResponsePtc");
 
 
 
@@ -46,9 +48,9 @@ void PrepareForUnfolding() {
   cout << "\n  Beginning preparation for unfolding..." << endl;
 
   // io parameters
-  const TString sOut("pp200r9embed.unfoldingPtBin01.et9vz55.r03a02rm1chrg.dr03q15.root");
-  const TString SInFF[NHistFF]   = {"output/pp200r9pt5ff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt7ff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt9ff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt11ff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt15ff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt25ff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt35ff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root"};
-  const TString SInRFF[NHistRFF] = {"output/pp200r9pt4rff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt5rff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt7rff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt9rff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt11rff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt15rff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt25rff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt35rff.forResponse.PtBin01.et920vz55.r03a02rm1chrg.dr03q15.root"};
+  const TString sOut("pp200r9embed.profileTest.et9vz55.r03a02rm1chrg.dr03q15.root");
+  const TString SInFF[NHistFF]   = {"output/pp200r9pt5ff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt7ff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt9ff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt11ff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt15ff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt25ff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt35ff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root"};
+  const TString SInRFF[NHistRFF] = {"output/pp200r9pt4rff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt5rff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt7rff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt9rff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt11rff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt15rff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt25rff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt35rff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root"};
 
 
   // open files
@@ -72,18 +74,21 @@ void PrepareForUnfolding() {
   cout << "    Opened files." << endl;
 
   // get histograms
-  TH1D *hJetsFF[NHistFF][2];
-  TH1D *hJetsRFF[NHistRFF][2];
-  TH1D *hJetEffFF[NHistFF][2];
-  TH1D *hJetEffRFF[NHistRFF][2];
-  TH2D *hResponseFF[NHistFF];
-  TH2D *hResponseRFF[NHistRFF];
+  TH1D     *hJetsFF[NHistFF][2];
+  TH1D     *hJetsRFF[NHistRFF][2];
+  TH1D     *hJetEffFF[NHistFF][2];
+  TH1D     *hJetEffRFF[NHistRFF][2];
+  TH2D     *hResponseFF[NHistFF];
+  TH2D     *hResponseRFF[NHistRFF];
+  TProfile *pResponseFF[NHistFF];
+  TProfile *pResponseRFF[NHistRFF];
   for (UInt_t iHistFF = 0; iHistFF < NHistFF; iHistFF++) {
-    hJetsFF[iHistFF][0]   = (TH1D*) fInFF[iHistFF] -> Get(SParticle.Data());
-    hJetsFF[iHistFF][1]   = (TH1D*) fInFF[iHistFF] -> Get(SDetector.Data());
-    hJetEffFF[iHistFF][0] = (TH1D*) fInFF[iHistFF] -> Get(SParEff.Data());
-    hJetEffFF[iHistFF][1] = (TH1D*) fInFF[iHistFF] -> Get(SDetEff.Data());
-    hResponseFF[iHistFF]  = (TH2D*) fInFF[iHistFF] -> Get(SResponse.Data());
+    hJetsFF[iHistFF][0]   = (TH1D*)     fInFF[iHistFF] -> Get(SParticle.Data());
+    hJetsFF[iHistFF][1]   = (TH1D*)     fInFF[iHistFF] -> Get(SDetector.Data());
+    hJetEffFF[iHistFF][0] = (TH1D*)     fInFF[iHistFF] -> Get(SParEff.Data());
+    hJetEffFF[iHistFF][1] = (TH1D*)     fInFF[iHistFF] -> Get(SDetEff.Data());
+    hResponseFF[iHistFF]  = (TH2D*)     fInFF[iHistFF] -> Get(SResponse.Data());
+    pResponseFF[iHistFF]  = (TProfile*) fInFF[iHistFF] -> Get(SProfile.Data());
     if (!hJetsFF[iHistFF][0] || !hJetsFF[iHistFF][1]) {
       cerr << "PANIC: couldn't grab FF distribution!\n"
            << "       hJetPar[" << iHistFF << "] = " << hJetsFF[iHistFF][0]
@@ -98,19 +103,21 @@ void PrepareForUnfolding() {
            << endl;
       return;
     }
-    if (!hResponseFF[iHistFF]) {
+    if (!hResponseFF[iHistFF] || !pResponseFF[iHistFF]) {
       cerr << "PANIC: couldn't grab FF response matrix!\n"
            << "       hResponse[" << iHistFF << "] = " << hResponseFF[iHistFF]
+           << ", pResponse[" << iHistFF << "] = " << pResponseFF[iHistFF]
            << endl;
       return;
     }
   }
   for (UInt_t iHistRFF = 0; iHistRFF < NHistRFF; iHistRFF++) {
-    hJetsRFF[iHistRFF][0]   = (TH1D*) fInRFF[iHistRFF] -> Get(SParticle.Data());
-    hJetsRFF[iHistRFF][1]   = (TH1D*) fInRFF[iHistRFF] -> Get(SDetector.Data());
-    hJetEffRFF[iHistRFF][0] = (TH1D*) fInRFF[iHistRFF] -> Get(SParEff.Data());
-    hJetEffRFF[iHistRFF][1] = (TH1D*) fInRFF[iHistRFF] -> Get(SDetEff.Data());
-    hResponseRFF[iHistRFF]  = (TH2D*) fInRFF[iHistRFF] -> Get(SResponse.Data());
+    hJetsRFF[iHistRFF][0]   = (TH1D*)     fInRFF[iHistRFF] -> Get(SParticle.Data());
+    hJetsRFF[iHistRFF][1]   = (TH1D*)     fInRFF[iHistRFF] -> Get(SDetector.Data());
+    hJetEffRFF[iHistRFF][0] = (TH1D*)     fInRFF[iHistRFF] -> Get(SParEff.Data());
+    hJetEffRFF[iHistRFF][1] = (TH1D*)     fInRFF[iHistRFF] -> Get(SDetEff.Data());
+    hResponseRFF[iHistRFF]  = (TH2D*)     fInRFF[iHistRFF] -> Get(SResponse.Data());
+    pResponseRFF[iHistRFF]  = (TProfile*) fInRFF[iHistRFF] -> Get(SProfile.Data());
     if (!hJetsRFF[iHistRFF][0] || !hJetsRFF[iHistRFF][1]) {
       cerr << "PANIC: couldn't grab RFF distribution!\n"
            << "       hJetPar[" << iHistRFF << "] = " << hJetsRFF[iHistRFF][0]
@@ -125,9 +132,10 @@ void PrepareForUnfolding() {
            << endl;
       return;
     }
-    if (!hResponseRFF[iHistRFF]) {
+    if (!hResponseRFF[iHistRFF] || !pResponseRFF[iHistRFF]) {
       cerr << "PANIC: couldn't grab RFF response matrix!\n"
            << "       hResponse[" << iHistRFF << "] = " << hResponseRFF[iHistRFF]
+           << ", pResponse[" << iHistRFF << "] = " << pResponseRFF[iHistRFF]
            << endl;
       return;
     }
@@ -176,6 +184,19 @@ void PrepareForUnfolding() {
           hResponseFF[iHistFF] -> SetBinError(iBinResX, iBinResY, binErr / dArea);
         }
       }
+      const UInt_t nBinResX = pResponseFF[iHistFF] -> GetNbinsX();
+      const UInt_t nBinResY = pResponseFF[iHistFF] -> GetNbinsY();
+      for (UInt_t iBinResX = 1; iBinResX < (nBinResX + 1); iBinResX++) {
+        for (UInt_t iBinResY = 1; iBinResY < (nBinResY + 1); iBinResY++) {
+          const Double_t binVal = pResponseFF[iHistFF] -> GetBinContent(iBinResX, iBinResY);
+          const Double_t binErr = pResponseFF[iHistFF] -> GetBinError(iBinResX, iBinResY);
+          const Double_t xWidth = pResponseFF[iHistFF] -> GetXaxis() -> GetBinWidth(iBinResX);
+          const Double_t yWidth = pResponseFF[iHistFF] -> GetYaxis() -> GetBinWidth(iBinResY);
+          const Double_t dArea  = xWidth * yWidth;
+          pResponseFF[iHistFF] -> SetBinContent(iBinResX, iBinResY, binVal / dArea);
+          pResponseFF[iHistFF] -> SetBinError(iBinResX, iBinResY, binErr / dArea);
+        }
+      }
     }  // end FF loop
     for (UInt_t iHistRFF = 0; iHistRFF < NHistRFF; iHistRFF++) {
       const UInt_t nBinP = hJetsRFF[iHistRFF][0] -> GetNbinsX();
@@ -216,6 +237,19 @@ void PrepareForUnfolding() {
           hResponseRFF[iHistRFF] -> SetBinError(iBinResX, iBinResY, binErr / dArea);
         }
       }
+      const UInt_t nBinResX = pResponseRFF[iHistRFF] -> GetNbinsX();
+      const UInt_t nBinResY = pResponseRFF[iHistRFF] -> GetNbinsY();
+      for (UInt_t iBinResX = 1; iBinResX < (nBinResX + 1); iBinResX++) {
+        for (UInt_t iBinResY = 1; iBinResY < (nBinResY + 1); iBinResY++) {
+          const Double_t binVal = pResponseRFF[iHistRFF] -> GetBinContent(iBinResX, iBinResY);
+          const Double_t binErr = pResponseRFF[iHistRFF] -> GetBinError(iBinResX, iBinResY);
+          const Double_t xWidth = pResponseRFF[iHistRFF] -> GetXaxis() -> GetBinWidth(iBinResX);
+          const Double_t yWidth = pResponseRFF[iHistRFF] -> GetYaxis() -> GetBinWidth(iBinResY);
+          const Double_t dArea  = xWidth * yWidth;
+          pResponseRFF[iHistRFF] -> SetBinContent(iBinResX, iBinResY, binVal / dArea);
+          pResponseRFF[iHistRFF] -> SetBinError(iBinResX, iBinResY, binErr / dArea);
+        }
+      }
     }  // end RFF loop
   }
   else {
@@ -248,6 +282,7 @@ void PrepareForUnfolding() {
     hJetEffFF[iHistFF][0] -> Scale(WeightsFF[(NTotal - NHistFF) + iHistFF]);
     hJetEffFF[iHistFF][1] -> Scale(WeightsFF[(NTotal - NHistFF) + iHistFF]);
     hResponseFF[iHistFF]  -> Scale(WeightsFF[(NTotal - NHistFF) + iHistFF]);
+    pResponseFF[iHistFF]  -> Scale(WeightsFF[(NTotal - NHistFF) + iHistFF]);
     normFF  += NormsFF[iHistFF] * WeightsFF[(NTotal - NHistFF) + iHistFF];
     normAll += NormsFF[iHistFF] * WeightsFF[(NTotal - NHistFF) + iHistFF];
   }
@@ -257,6 +292,7 @@ void PrepareForUnfolding() {
     hJetEffRFF[iHistRFF][0] -> Scale(WeightsRFF[(NTotal - NHistRFF) + iHistRFF]);
     hJetEffRFF[iHistRFF][1] -> Scale(WeightsRFF[(NTotal - NHistRFF) + iHistRFF]);
     hResponseRFF[iHistRFF]  -> Scale(WeightsRFF[(NTotal - NHistRFF) + iHistRFF]);
+    pResponseRFF[iHistRFF]  -> Scale(WeightsRFF[(NTotal - NHistRFF) + iHistRFF]);
     normRFF += NormsRFF[iHistRFF] * WeightsRFF[(NTotal - NHistRFF) + iHistRFF];
     normAll += NormsRFF[iHistRFF] * WeightsRFF[(NTotal - NHistRFF) + iHistRFF];
   }
@@ -266,63 +302,75 @@ void PrepareForUnfolding() {
 
 
   // for sums
-  TH1D *hJetSumFF[2];
-  TH1D *hJetSumRFF[2];
-  TH1D *hJetSumAll[2];
-  TH1D *hEffSumFF[2];
-  TH1D *hEffSumRFF[2];
-  TH1D *hEffSumAll[2];
-  TH2D *hResSumFF;
-  TH2D *hResSumRFF;
-  TH2D *hResSumAll;
+  TH1D     *hJetSumFF[2];
+  TH1D     *hJetSumRFF[2];
+  TH1D     *hJetSumAll[2];
+  TH1D     *hEffSumFF[2];
+  TH1D     *hEffSumRFF[2];
+  TH1D     *hEffSumAll[2];
+  TH2D     *hResSumFF;
+  TH2D     *hResSumRFF;
+  TH2D     *hResSumAll;
+  TProfile *pResSumFF;
+  TProfile *pResSumRFF;
+  TProfile *pResSumAll;
   // initialize FF sums
-  hJetSumFF[0] = (TH1D*) hJetsFF[0][0]   -> Clone();
-  hJetSumFF[1] = (TH1D*) hJetsFF[0][1]   -> Clone();
-  hEffSumFF[0] = (TH1D*) hJetEffFF[0][0] -> Clone();
-  hEffSumFF[1] = (TH1D*) hJetEffFF[0][1] -> Clone();
-  hResSumFF    = (TH2D*) hResponseFF[0]  -> Clone();
+  hJetSumFF[0] = (TH1D*)     hJetsFF[0][0]   -> Clone();
+  hJetSumFF[1] = (TH1D*)     hJetsFF[0][1]   -> Clone();
+  hEffSumFF[0] = (TH1D*)     hJetEffFF[0][0] -> Clone();
+  hEffSumFF[1] = (TH1D*)     hJetEffFF[0][1] -> Clone();
+  hResSumFF    = (TH2D*)     hResponseFF[0]  -> Clone();
+  pResSumFF    = (TProfile*) pResponseFF[0] -> Clone();
   hJetSumFF[0] -> SetName("hSumParFF");
   hJetSumFF[1] -> SetName("hSumDetFF");
   hEffSumFF[0] -> SetName("hEffParFF");
   hEffSumFF[1] -> SetName("hEffDetFF");
   hResSumFF    -> SetName("hResponseFF");
+  pResSumFF    -> SetName("pResponseFF");
   hJetSumFF[0] -> Reset("ICE");
   hJetSumFF[1] -> Reset("ICE");
   hEffSumFF[0] -> Reset("ICE");
   hEffSumFF[1] -> Reset("ICE");
   hResSumFF    -> Reset("ICE");
+  pResSumFF    -> Reset("ICE");
   // initialize RFF sums
-  hJetSumRFF[0] = (TH1D*) hJetsRFF[0][0]   -> Clone();
-  hJetSumRFF[1] = (TH1D*) hJetsRFF[0][1]   -> Clone();
-  hEffSumRFF[0] = (TH1D*) hJetEffRFF[0][0] -> Clone();
-  hEffSumRFF[1] = (TH1D*) hJetEffRFF[0][1] -> Clone();
-  hResSumRFF    = (TH2D*) hResponseRFF[0]  -> Clone();
+  hJetSumRFF[0] = (TH1D*)     hJetsRFF[0][0]   -> Clone();
+  hJetSumRFF[1] = (TH1D*)     hJetsRFF[0][1]   -> Clone();
+  hEffSumRFF[0] = (TH1D*)     hJetEffRFF[0][0] -> Clone();
+  hEffSumRFF[1] = (TH1D*)     hJetEffRFF[0][1] -> Clone();
+  hResSumRFF    = (TH2D*)     hResponseRFF[0]  -> Clone();
+  pResSumRFF    = (TProfile*) pResponseRFF[0]  -> Clone();
   hJetSumRFF[0] -> SetName("hSumParRFF");
   hJetSumRFF[1] -> SetName("hSumDetRFF");
   hEffSumRFF[0] -> SetName("hEffParRFF");
   hEffSumRFF[1] -> SetName("hEffDetRFF");
   hResSumRFF    -> SetName("hResponseRFF");
+  pResSumRFF    -> SetName("pResponseRFF");
   hJetSumRFF[0] -> Reset("ICE");
   hJetSumRFF[1] -> Reset("ICE");
   hEffSumRFF[0] -> Reset("ICE");
   hEffSumRFF[1] -> Reset("ICE");
   hResSumRFF    -> Reset("ICE");
+  pResSumRFF    -> Reset("ICE");
   // initialize All sums
-  hJetSumAll[0] = (TH1D*) hJetsRFF[0][0]   -> Clone();
-  hJetSumAll[1] = (TH1D*) hJetsRFF[0][1]   -> Clone();
-  hEffSumAll[0] = (TH1D*) hJetEffRFF[0][0] -> Clone();
-  hEffSumAll[1] = (TH1D*) hJetEffRFF[0][1] -> Clone();
-  hResSumAll    = (TH2D*) hResponseRFF[0]  -> Clone();
+  hJetSumAll[0] = (TH1D*)     hJetsRFF[0][0]   -> Clone();
+  hJetSumAll[1] = (TH1D*)     hJetsRFF[0][1]   -> Clone();
+  hEffSumAll[0] = (TH1D*)     hJetEffRFF[0][0] -> Clone();
+  hEffSumAll[1] = (TH1D*)     hJetEffRFF[0][1] -> Clone();
+  hResSumAll    = (TH2D*)     hResponseRFF[0]  -> Clone();
+  pResSumAll    = (TProfile*) pResponseRFF[0]  -> Clone();
   hJetSumAll[0] -> SetName("hSumParAll");
   hJetSumAll[1] -> SetName("hSumDetAll");
   hEffSumAll[0] -> SetName("hEffParAll");
   hEffSumAll[1] -> SetName("hEffDetAll");
   hResSumAll    -> SetName("hResponseAll");
+  pResSumAll    -> SetName("pResponseAll");
   hJetSumAll[0] -> Reset("ICE");
   hJetSumAll[1] -> Reset("ICE");
   hEffSumAll[0] -> Reset("ICE");
   hEffSumAll[1] -> Reset("ICE");
   hResSumAll    -> Reset("ICE");
+  pResSumAll    -> Reset("ICE");
   // sum histograms
   for (UInt_t iHistFF = 0; iHistFF < NHistFF; iHistFF++) {
     hJetSumFF[0]  -> Add(hJetsFF[iHistFF][0]);
@@ -334,7 +382,9 @@ void PrepareForUnfolding() {
     hEffSumAll[0] -> Add(hJetEffFF[iHistFF][0]);
     hEffSumAll[1] -> Add(hJetEffFF[iHistFF][1]);
     hResSumFF     -> Add(hResponseFF[iHistFF]);
+    pResSumFF     -> Add(pResponseFF[iHistFF]);
     hResSumAll    -> Add(hResponseFF[iHistFF]);
+    pResSumAll    -> Add(pResponseFF[iHistFF]);
   }
   for (UInt_t iHistRFF = 0; iHistRFF < NHistRFF; iHistRFF++) {
     hJetSumRFF[0] -> Add(hJetsRFF[iHistRFF][0]);
@@ -346,7 +396,9 @@ void PrepareForUnfolding() {
     hEffSumAll[0] -> Add(hJetEffRFF[iHistRFF][0]);
     hEffSumAll[1] -> Add(hJetEffRFF[iHistRFF][1]);
     hResSumRFF    -> Add(hResponseRFF[iHistRFF]);
+    pResSumRFF    -> Add(pResponseRFF[iHistRFF]);
     hResSumAll    -> Add(hResponseRFF[iHistRFF]);
+    pResSumAll    -> Add(pResponseRFF[iHistRFF]);
   }
   cout << "    Summed histograms." << endl;
 
@@ -428,6 +480,64 @@ void PrepareForUnfolding() {
       }
     }
   }
+
+/*
+  // normalize response profiles
+  const UInt_t nXPbinsFF  = pResSumFF  -> GetNbinsX();
+  const UInt_t nYPbinsFF  = pResSumFF  -> GetNbinsY();
+  const UInt_t nXPbinsRFF = pResSumRFF -> GetNbinsX();
+  const UInt_t nYPbinsRFF = pResSumRFF -> GetNbinsY();
+  const UInt_t nXPbinsAll = pResSumAll -> GetNbinsX();
+  const UInt_t nYPbinsAll = pResSumAll -> GetNbinsY();
+  for (UInt_t iBinY = 0; iBinY < nYPbinsFF; iBinY++) {
+    const Double_t binNormFF = pResSumFF -> Integral(1, nXPbinsFF);
+    if (binNormFF != 0.) {
+      for (UInt_t iBinX = 0; iBinX < nXPbinsFF; iBinX++) {
+        const Double_t binVal = pResSumFF -> GetBinContent(iBinX, iBinY);
+        const Double_t binErr = pResSumFF -> GetBinError(iBinX, iBinY);
+        const Double_t xWidth = pResSumFF -> GetXaxis() -> GetBinWidth(iBinX);
+        const Double_t yWidth = pResSumFF -> GetYaxis() -> GetBinWidth(iBinY);
+        const Double_t dArea  = xWidth * yWidth;
+        const Double_t newVal = (binVal / binNormFF) * dArea;
+        const Double_t newErr = (binErr / binNormFF) * dArea;
+        pResSumFF -> SetBinContent(iBinX, iBinY, newVal);
+        pResSumFF -> SetBinError(iBinX, iBinY, newErr);
+      }
+    }
+  }
+  for (UInt_t iBinY = 0; iBinY < nYPbinsRFF; iBinY++) {
+    const Double_t binNormRFF = pResSumRFF -> Integral(1, nXPbinsRFF);
+    if (binNormRFF != 0.) {
+      for (UInt_t iBinX = 0; iBinX < nXPbinsRFF; iBinX++) {
+        const Double_t binVal = pResSumRFF -> GetBinContent(iBinX, iBinY);
+        const Double_t binErr = pResSumRFF -> GetBinError(iBinX, iBinY);
+        const Double_t xWidth = pResSumRFF -> GetXaxis() -> GetBinWidth(iBinX);
+        const Double_t yWidth = pResSumRFF -> GetYaxis() -> GetBinWidth(iBinY);
+        const Double_t dArea  = xWidth * yWidth;
+        const Double_t newVal = (binVal / binNormRFF) * dArea;
+        const Double_t newErr = (binErr / binNormRFF) * dArea;
+        pResSumRFF -> SetBinContent(iBinX, iBinY, newVal);
+        pResSumRFF -> SetBinError(iBinX, iBinY, newErr);
+      }
+    }
+  }
+  for (UInt_t iBinY = 0; iBinY < nYPbinsAll; iBinY++) {
+    const Double_t binNormAll = pResSumAll -> Integral(1, nXPbinsAll);
+    if (binNormAll != 0.) {
+      for (UInt_t iBinX = 0; iBinX < nXPbinsAll; iBinX++) {
+        const Double_t binVal = pResSumAll -> GetBinContent(iBinX, iBinY);
+        const Double_t binErr = pResSumAll -> GetBinError(iBinX, iBinY);
+        const Double_t xWidth = pResSumAll -> GetXaxis() -> GetBinWidth(iBinX);
+        const Double_t yWidth = pResSumAll -> GetYaxis() -> GetBinWidth(iBinY);
+        const Double_t dArea  = xWidth * yWidth;
+        const Double_t newVal = (binVal / binNormAll) * dArea;
+        const Double_t newErr = (binErr / binNormAll) * dArea;
+        pResSumAll -> SetBinContent(iBinX, iBinY, newVal);
+        pResSumAll -> SetBinError(iBinX, iBinY, newErr);
+      }
+    }
+  }
+*/
   cout << "    Normalized histograms." << endl;
 
 
@@ -491,6 +601,9 @@ void PrepareForUnfolding() {
   hResSumFF     -> Write();
   hResSumRFF    -> Write();
   hResSumAll    -> Write();
+  pResSumFF     -> Write();
+  pResSumRFF    -> Write();
+  pResSumAll    -> Write();
   fOut          -> Close();
   for (UInt_t iHistFF = 0; iHistFF < NHistFF; iHistFF++) {
     fInFF[iHistFF] -> cd();
