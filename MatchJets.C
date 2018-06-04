@@ -29,7 +29,7 @@ static const Double_t MinJetPt(0.2);
 
 // misc parameters
 static const Bool_t DoNorm(false);
-static const Bool_t UseVariablePtBins(false);
+static const Bool_t UseVariablePtBins(true);
 static const UInt_t NJetTypes(7);
 static const UInt_t NMatchTypes(5);
 static const UInt_t NDirectories(NJetTypes + 1);
@@ -779,12 +779,14 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
         hJetSvsDr[0]  -> Fill(dR, s);
 
 
-        Bool_t isBetter = false;
-        Bool_t isInRcut = (dR < Rcut);
-        Bool_t isInQcut = (qT > Qmin);
+        Bool_t   isBetter   = false;
+        Bool_t   isInRcut   = (dR < Rcut);
+        Bool_t   isInQcut   = (qT > Qmin);
+        Double_t matchValue = TMath::Abs(qT - 1.);
+        Double_t bestValue  = TMath::Abs(bQt - 1.);
         if (isInRcut && isInQcut && isInAcceptance) {
           isMatched = true;
-          isBetter  = ((dR < bDr) && (qT > bQt));
+          isBetter  = (matchValue < bestValue);
 
           // fill candidate histograms
           hJetArea[2]     -> Fill(dA);
