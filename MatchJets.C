@@ -19,8 +19,8 @@ using namespace std;
 
 // filepaths
 static const TString SOutDefault("test.root");
-static const TString SParDefault("../JetMaker/mc/pp200r9pt35rff.particle.r03rm1chrg.root");
-static const TString SDetDefault("../JetMaker/mudst/output/ForResponseMatrix/pp200r9pt35rff.et920vz55had.r03rm1chrg.root");
+static const TString SParDefault("../JetMaker/mc/output/pp200r9pt15rff.particle.r03rm1chrg.root");
+static const TString SDetDefault("../JetMaker/mudst/output/ForResponseMatrix/pp200r9pt15rff.et920vz55had.r03rm1chrg.root");
 
 // jet parameters
 static const Double_t Rcut(0.3);      // Rcut = Rjet
@@ -659,6 +659,69 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       cout << "      Processing event " << i+1 << "/" << nEvts << "..." << endl;
 
 
+    // TEST [06.26.2018]
+    const Double_t eTtrgP  = pTrgEt;
+    const Double_t hTrgP   = pTrgEta;
+    const UInt_t   tspTrgP = (UInt_t) pTSP;
+    const Bool_t isInEtParCut  = ((eTtrgP > MinTrgEt) && (eTtrgP < MaxTrgEt));
+    const Bool_t isInEtaParCut = (TMath::Abs(hTrgP) < MaxTrgEta);
+    Bool_t isHadron(false);
+    switch (tspTrgP) {
+      case 8:
+        isHadron = true;
+        break;
+      case 9:
+        isHadron = true;
+        break;
+      case 11:
+        isHadron = true;
+        break;
+      case 12:
+        isHadron = true;
+        break;
+      case 14:
+        isHadron = true;
+        break;
+      case 15:
+        isHadron = true;
+        break;
+      case 19:
+        isHadron = true;
+        break;
+      case 21:
+        isHadron = true;
+        break;
+      case 23:
+        isHadron = true;
+        break;
+      case 24:
+        isHadron = true;
+        break;
+      case 27:
+        isHadron = true;
+        break;
+      case 29:
+        isHadron = true;
+        break;
+      case 31:
+        isHadron = true;
+        break;
+      case 32:
+        isHadron = true;
+        break;
+      case 45:
+        isHadron = true;
+        break;
+      case 46:
+        isHadron = true;
+        break;
+      default:
+        isHadron = false;
+        break;
+    }
+    if (!isInEtParCut || !isInEtaParCut || !isHadron) continue;
+
+
     // trigger info
     const Double_t vZtrg  = dVz;
     const Double_t eTtrg  = dTrgEt;
@@ -697,13 +760,10 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       const Double_t pDfCut    = TMath::Abs(pDf - pi);
       const Bool_t   isRecoilP = (pDfCut < RecoilDf);
 
-      // TEST [05.21.2018]
-      //if (pPt < MinJetPt)
-        //continue;
-      //if (pA < MinArea)
-        //continue;
+      // consider only recoil jets
       if (!isRecoilP)
         continue;
+
 
       // fill particle histograms
       hJetArea[0]     -> Fill(pA);
@@ -713,7 +773,6 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       hJetPtCorr[0]   -> Fill(pPtc);
       hJetPhiVsEta[0] -> Fill(pH, pF);
 
-
       if (pPt < Pcut)
         continue;
       else {
@@ -722,21 +781,23 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
         ++nToMatch;
       }
 
-      // match jets ['b' for best]
-      Int_t    bIndex = 0.;
-      Double_t bH     = 0.;
-      Double_t bPt    = 0.;
-      Double_t bPtc   = 0.;
-      Double_t bF     = 0.;
-      Double_t bA     = 0.;
-      Double_t bQt    = 0.;
-      Double_t bS     = 0.;
-      Double_t bDp    = 0.;
-      Double_t bDq    = 0.;
-      Double_t bDr    = 999.;
+
+      // matched jets ['b' for best]
+      Int_t    bIndex = -999;
+      Double_t bH     = -999.;
+      Double_t bPt    = -999.;
+      Double_t bPtc   = -999.;
+      Double_t bF     = -999.;
+      Double_t bA     = -999.;
+      Double_t bQt    = -999.;
+      Double_t bS     = -999.;
+      Double_t bDp    = -999.;
+      Double_t bDq    = -999.;
+      Double_t bDr    = -999.;
 
       // detector jet loop
-      Bool_t isMatched = false;
+      UInt_t nCandidate = 0;
+      Bool_t isMatched  = false;
       for (UInt_t k = 0; k < nDjets; k++) {
 
         const Double_t dA   = dJetArea -> at(k);
@@ -752,9 +813,10 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
         const Double_t dDfCut    = TMath::Abs(dDf - pi);
         const Bool_t   isRecoilD = (dDfCut < RecoilDf);
 
-        Bool_t isInAcceptance = true;
-        if ((dPt < MinJetPt) || (dA < MinArea) || (!isRecoilD))
-          isInAcceptance = false;
+        // detector cuts
+        const Bool_t isInJetAcut    = (dA > MinArea);
+        const Bool_t isInJetPtCut   = (dPt > MinJetPt);
+        const Bool_t isInAcceptance = (isInJetAcut && isInJetPtCut && isRecoilD);
 
 
         // match jets
@@ -763,7 +825,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
         Double_t dP   = dPt - pPt;
         Double_t dQ   = dP / pPt;
         Double_t dHpd = dH - pH;
-        Double_t dFpd = dF - pF;
+        Double_t dFpd = dDf - pDf;
         Double_t dR   = sqrt((dHpd * dHpd) + (dFpd * dFpd));
 
         if (dPt < Dcut)
@@ -802,6 +864,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
           hJetDq[1]       -> Fill(dQ);
           hJetQtVsDr[1]   -> Fill(dR, qT);
           hJetSvsDr[1]    -> Fill(dR, s);
+          ++nCandidate;
         }
         else {
           // fill junk histograms
@@ -834,18 +897,36 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
         }
 
         // check if candidate is best match
-        if (isMatched && isBetter) {
-          bIndex = k;
-          bA     = dA;
-          bH     = dH;
-          bF     = dF;
-          bPt    = dPt;
-          bPtc   = dPtc;
-          bQt    = qT;
-          bS     = s;
-          bDp    = dP;
-          bDq    = dQ;
-          bDr    = dR;
+        const Bool_t isOnlyCandidate = (nCandidate = 1);
+        if (!isOnlyCandidate) {
+          if (isMatched && isBetter) {
+            bIndex = k;
+            bA     = dA;
+            bH     = dH;
+            bF     = dF;
+            bPt    = dPt;
+            bPtc   = dPtc;
+            bQt    = qT;
+            bS     = s;
+            bDp    = dP;
+            bDq    = dQ;
+            bDr    = dR;
+          }
+        }
+        else {
+          if (isMatched) {
+            bIndex = k;
+            bA     = dA;
+            bH     = dH;
+            bF     = dF;
+            bPt    = dPt;
+            bPtc   = dPtc;
+            bQt    = qT;
+            bS     = s;
+            bDp    = dP;
+            bDq    = dQ;
+            bDr    = dR;
+          }
         }
 
       }  // end detector jet loop
