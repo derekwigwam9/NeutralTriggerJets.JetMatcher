@@ -29,7 +29,7 @@ static const Double_t MinJetPt(0.2);
 
 // misc parameters
 static const Bool_t DoNorm(false);
-static const Bool_t UseVariablePtBins(true);
+static const Bool_t UseVariablePtBins(false);
 static const UInt_t NJetTypes(7);
 static const UInt_t NMatchTypes(5);
 static const UInt_t NDirectories(NJetTypes + 1);
@@ -897,36 +897,18 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
         }
 
         // check if candidate is best match
-        const Bool_t isOnlyCandidate = (nCandidate = 1);
-        if (!isOnlyCandidate) {
-          if (isMatched && isBetter) {
-            bIndex = k;
-            bA     = dA;
-            bH     = dH;
-            bF     = dF;
-            bPt    = dPt;
-            bPtc   = dPtc;
-            bQt    = qT;
-            bS     = s;
-            bDp    = dP;
-            bDq    = dQ;
-            bDr    = dR;
-          }
-        }
-        else {
-          if (isMatched) {
-            bIndex = k;
-            bA     = dA;
-            bH     = dH;
-            bF     = dF;
-            bPt    = dPt;
-            bPtc   = dPtc;
-            bQt    = qT;
-            bS     = s;
-            bDp    = dP;
-            bDq    = dQ;
-            bDr    = dR;
-          }
+        if (isMatched && isBetter) {
+          bIndex = k;
+          bA     = dA;
+          bH     = dH;
+          bF     = dF;
+          bPt    = dPt;
+          bPtc   = dPtc;
+          bQt    = qT;
+          bS     = s;
+          bDp    = dP;
+          bDq    = dQ;
+          bDr    = dR;
         }
 
       }  // end detector jet loop
