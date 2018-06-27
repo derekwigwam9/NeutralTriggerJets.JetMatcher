@@ -30,6 +30,8 @@ static const Double_t MinJetPt(0.2);
 // misc parameters
 static const Bool_t DoNorm(false);
 static const Bool_t UseVariablePtBins(true);
+static const Bool_t UseParticleLevelTrigger(true);
+static const UInt_t NHadIds(16);
 static const UInt_t NJetTypes(7);
 static const UInt_t NMatchTypes(5);
 static const UInt_t NDirectories(NJetTypes + 1);
@@ -48,6 +50,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   const Double_t MaxTrgEt(20.);
   const Double_t MinTrgTsp(3.);
   const Double_t MaxTrgTsp(100.);
+  const UInt_t   idHadTrg[NHadIds] = {8, 9, 11, 12, 14, 15, 19, 21, 23, 24, 27, 29, 31, 32, 45, 46};
 
   // matching constants
   const Double_t Qmin(0.15);    // fraction of reconstructed jet pT must be above Qmin
@@ -660,81 +663,40 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       cout << "      Processing event " << i+1 << "/" << nEvts << "..." << endl;
 
 
-    // TEST [06.26.2018]
+    // particle-level trigger info
     const Double_t eTtrgP  = pTrgEt;
     const Double_t hTrgP   = pTrgEta;
     const UInt_t   tspTrgP = (UInt_t) pTSP;
-    const Bool_t isInEtParCut  = ((eTtrgP > MinTrgEt) && (eTtrgP < MaxTrgEt));
-    const Bool_t isInEtaParCut = (TMath::Abs(hTrgP) < MaxTrgEta);
+
     Bool_t isHadron(false);
-    switch (tspTrgP) {
-      case 8:
+    for (UInt_t iHad = 0; iHad < NHadIds; iHad++) {
+      if (tspTrgP == idHadTrg[iHad]) {
         isHadron = true;
         break;
-      case 9:
-        isHadron = true;
-        break;
-      case 11:
-        isHadron = true;
-        break;
-      case 12:
-        isHadron = true;
-        break;
-      case 14:
-        isHadron = true;
-        break;
-      case 15:
-        isHadron = true;
-        break;
-      case 19:
-        isHadron = true;
-        break;
-      case 21:
-        isHadron = true;
-        break;
-      case 23:
-        isHadron = true;
-        break;
-      case 24:
-        isHadron = true;
-        break;
-      case 27:
-        isHadron = true;
-        break;
-      case 29:
-        isHadron = true;
-        break;
-      case 31:
-        isHadron = true;
-        break;
-      case 32:
-        isHadron = true;
-        break;
-      case 45:
-        isHadron = true;
-        break;
-      case 46:
-        isHadron = true;
-        break;
-      default:
-        isHadron = false;
-        break;
+      }
     }
-    if (!isInEtParCut || !isInEtaParCut || !isHadron) continue;
+
+    // particle-level trigger cuts
+    const Bool_t isInEtaParCut = (TMath::Abs(hTrgP) < MaxTrgEta);
+    const Bool_t isInEtParCut  = ((eTtrgP > MinTrgEt) && (eTtrgP < MaxTrgEt));
+    const Bool_t isGoodParTrg  = (isInEtParCut && isInEtaParCut && isHadron);
+    if (UseParticleLevelTrigger && !isGoodParTrg) continue;
 
 
-    // trigger info
-    const Double_t vZtrg  = dVz;
-    const Double_t eTtrg  = dTrgEt;
-    const Double_t hTrg   = dTrgEta;
-    const Double_t tspTrg = TMath::Abs(dTSP);
 
-    // trigger cuts
-    const Bool_t isInVzCut  = (TMath::Abs(vZtrg) < MaxVz);
-    const Bool_t isInEtaCut = (TMath::Abs(hTrg) < MaxTrgEta);
-    const Bool_t isInEtCut  = ((eTtrg > MinTrgEt) && (eTtrg < MaxTrgEt));
-    const Bool_t isInTspCut = ((tspTrg >= MinTrgTsp) && (tspTrg <= MaxTrgTsp));
-    if (!isInVzCut || !isInEtaCut || !isInEtCut || !isInTspCut) continue;
+    // detector-level trigger info
+    const Double_t vZtrgD  = dVz;
+    const Double_t eTtrgD  = dTrgEt;
+    const Double_t hTrgD   = dTrgEta;
+    const Double_t tspTrgD = TMath::Abs(dTSP);
+
+    // detector-level trigger cuts
+    const Bool_t isInVzDetCut  = (TMath::Abs(vZtrgD) < MaxVz);
+    const Bool_t isInEtaDetCut = (TMath::Abs(hTrgD) < MaxTrgEta);
+    const Bool_t isInEtDetCut  = ((eTtrgD > MinTrgEt) && (eTtrgD < MaxTrgEt));
+    const Bool_t isInTspDetCut = ((tspTrgD >= MinTrgTsp) && (tspTrgD <= MaxTrgTsp));
+    const Bool_t isGoodDetTrg  = (isInVzDetCut && isInEtaDetCut && isInEtDetCut && isInTspDetCut);
+    if (!isGoodDetTrg) continue;
     nTrig++;
 
 
@@ -751,8 +713,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       const Double_t pF   = pJetPhi  -> at(j);
       const Double_t pPt  = pJetPt   -> at(j);
       const Double_t pPtc = pPt - (pRho * pA);
-      if (pPt > HardCut)
-        ++nHardP;
+      if (pPt > HardCut) nHardP++;
 
       // calculate delta phi
       Double_t pDf = pF - pTrgPhi;
@@ -762,8 +723,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       const Bool_t   isRecoilP = (pDfCut < RecoilDf);
 
       // consider only recoil jets
-      if (!isRecoilP)
-        continue;
+      if (!isRecoilP) continue;
 
 
       // fill particle histograms
@@ -779,7 +739,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       else {
         hParArea   -> Fill(pA);
         hParPtCorr -> Fill(pPtc);
-        ++nToMatch;
+        nToMatch++;
       }
 
 
@@ -828,9 +788,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
         Double_t dHpd = dH - pH;
         Double_t dFpd = dDf - pDf;
         Double_t dR   = sqrt((dHpd * dHpd) + (dFpd * dFpd));
-
-        if (dPt < Dcut)
-          continue;
+        if (dPt < Dcut) continue;
 
         // fill detector histograms
         hJetQt[0]     -> Fill(qT);
@@ -865,7 +823,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
           hJetDq[1]       -> Fill(dQ);
           hJetQtVsDr[1]   -> Fill(dR, qT);
           hJetSvsDr[1]    -> Fill(dR, s);
-          ++nCandidate;
+          nCandidate++;
         }
         else {
           // fill junk histograms
@@ -945,7 +903,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
         hJetQtVsDr[2]   -> Fill(bDr, bQt);
         hJetSvsDr[2]    -> Fill(bDr, bS);
         matchIndices.push_back(bIndex);
-        ++nMatched;
+        nMatched++;
       }
       else {
         hJetArea[6]     -> Fill(pA);
@@ -975,8 +933,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       Double_t dF   = dJetPhi  -> at(j);
       Double_t dPt  = dJetPt   -> at(j);
       Double_t dPtc = dPt - (dRho * dA);
-      if (dPt > HardCut)
-        ++nHardD;
+      if (dPt > HardCut) nHardD++;
 
       // calculate delta phi
       Double_t dDf = dF - dTrgPhi;
