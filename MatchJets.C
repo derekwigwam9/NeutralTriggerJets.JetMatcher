@@ -30,7 +30,7 @@ static const Double_t MinJetPt(0.2);
 // misc parameters
 static const Bool_t DoNorm(false);
 static const Bool_t UseVariablePtBins(true);
-static const Bool_t UseParticleLevelTrigger(true);
+static const Bool_t UseParticleLevelTrigger(false);
 static const UInt_t NHadIds(16);
 static const UInt_t NJetTypes(7);
 static const UInt_t NMatchTypes(5);
@@ -58,10 +58,12 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   const Double_t HardCut(10.);  // jets w/ pT > HardCut are considered 'hard'
   const Double_t Pcut(0.);      // pTpar must be above this
   const Double_t Dcut(0.);      // pTdet must be above this
+  const Double_t FmatchMin(0.);
+  const Double_t FmatchMax(TMath::TwoPi());
 
   // misc. constants
   const Double_t pi(TMath::Pi());
-  const Double_t RecoilDf(pi / 4.);
+  const Double_t RecoilDf(TMath::PiOver4());
   const Double_t nPtBinsX(36);
   const Double_t nPtBinsY(36);
   const Double_t pTbinsX[37] = {-1., -0.8, -0.6, -0.4, -0.2, 0., 0.2, 0.4, 0.6, 0.8, 1., 1.5, 2., 2.5, 3., 3.5, 4., 5., 6., 7., 8., 9., 10., 12., 14., 16., 18., 20., 22.5, 25., 27.5, 30., 35., 40., 50., 60., 80.};
@@ -722,9 +724,14 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       const Double_t pDfCut    = TMath::Abs(pDf - pi);
       const Bool_t   isRecoilP = (pDfCut < RecoilDf);
 
+      // for matching
+      Double_t fMatchP = pDf;
+      if (fMatchP < FmatchMin) fMatchP += (2. * pi);
+      if (fMatchP > FmatchMax) fMatchP -= (2. * pi);
+
+
       // consider only recoil jets
       if (!isRecoilP) continue;
-
 
       // fill particle histograms
       hJetArea[0]     -> Fill(pA);
@@ -774,11 +781,16 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
         const Double_t dDfCut    = TMath::Abs(dDf - pi);
         const Bool_t   isRecoilD = (dDfCut < RecoilDf);
 
+        // for matching
+        Double_t fMatchD = dDf;
+        if (fMatchD < FmatchMin) fMatchD += (2. * pi);
+        if (fMatchD > FmatchMax) fMatchD -= (2. * pi);
+
+
         // detector cuts
         const Bool_t isInJetAcut    = (dA > MinArea);
         const Bool_t isInJetPtCut   = (dPt > MinJetPt);
         const Bool_t isInAcceptance = (isInJetAcut && isInJetPtCut && isRecoilD);
-
 
         // match jets
         Double_t qT   = dPt / pPt;
@@ -786,7 +798,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
         Double_t dP   = dPt - pPt;
         Double_t dQ   = dP / pPt;
         Double_t dHpd = dH - pH;
-        Double_t dFpd = dDf - pDf;
+        Double_t dFpd = fMatchD - fMatchP;
         Double_t dR   = sqrt((dHpd * dHpd) + (dFpd * dFpd));
         if (dPt < Dcut) continue;
 
