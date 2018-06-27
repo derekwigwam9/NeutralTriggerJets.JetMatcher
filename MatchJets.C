@@ -29,7 +29,7 @@ static const Double_t MinJetPt(0.2);
 
 // misc parameters
 static const Bool_t DoNorm(false);
-static const Bool_t UseVariablePtBins(false);
+static const Bool_t UseVariablePtBins(true);
 static const UInt_t NJetTypes(7);
 static const UInt_t NMatchTypes(5);
 static const UInt_t NDirectories(NJetTypes + 1);
@@ -50,7 +50,8 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   const Double_t MaxTrgTsp(100.);
 
   // matching constants
-  const Double_t Qmin(0.15);    // fraction of jet pT must be above Qmin
+  const Double_t Qmin(0.15);    // fraction of reconstructed jet pT must be above Qmin
+  const Double_t Qmax(1.85);    // fraction of reconstructed jet pT must be below Qmax
   const Double_t HardCut(10.);  // jets w/ pT > HardCut are considered 'hard'
   const Double_t Pcut(0.);      // pTpar must be above this
   const Double_t Dcut(0.);      // pTdet must be above this
@@ -843,7 +844,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
 
         Bool_t   isBetter   = false;
         Bool_t   isInRcut   = (dR < Rcut);
-        Bool_t   isInQcut   = (qT > Qmin);
+        Bool_t   isInQcut   = ((qT > Qmin) && (qT < Qmax));
         Double_t matchValue = TMath::Abs(qT - 1.);
         Double_t bestValue  = TMath::Abs(bQt - 1.);
         if (isInRcut && isInQcut && isInAcceptance) {
