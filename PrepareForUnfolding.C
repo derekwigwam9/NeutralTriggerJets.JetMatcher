@@ -24,13 +24,14 @@ using namespace std;
 static const UInt_t   NHistFF(7);
 static const UInt_t   NHistRFF(8);
 static const UInt_t   NTotal(10);
-static const Double_t NormsFF[NHistFF]   = {2., 37., 163., 463., 2419., 8762., 4455.};
-static const Double_t NormsRFF[NHistRFF] = {1., 5., 36., 204., 628., 2807., 7547., 3855.};
+static const Double_t NTrgsFF[NHistFF]   = {2., 37., 163., 463., 2419., 8762., 4455.};
+static const Double_t NTrgsRFF[NHistRFF] = {1., 5., 36., 204., 628., 2807., 7547., 3855.};
 static const Double_t WeightsFF[NTotal]  = {1.0, 3.361596e-01, 1.401161e-01, 1.337302e-01, 2.895246e-02, 1.042577e-02, 8.294575e-03, 2.064352e-03, 8.088693e-05, 1.417116e-05};
 static const Double_t WeightsRFF[NTotal] = {1.0, 3.501425e-01, 1.395103e-01, 1.326444e-01, 2.801546e-02, 1.031377e-02, 8.210314e-03, 1.985107e-03, 8.054588e-05, 1.449037e-05};
 
 // io constants
-static const Bool_t  VariableBins(false);
+static const Bool_t  VariableBins(true);
+static const Bool_t  UseRootNTrgs(true);
 static const Float_t JetResParameter(0.3);
 static const TString SParticle("ParticleJets/hJetPtCorrP");
 static const TString SDetector("MatchJets/hJetPtCorrM");
@@ -38,6 +39,7 @@ static const TString SParEff("EventInfo/hParPtCorr");
 static const TString SDetEff("EventInfo/hDetPtCorr");
 static const TString SResponse("hResponsePtc");
 static const TString SProfile("pResponsePtc");
+static const TString SNorm("EventInfo/hRefmultP");
 
 
 
@@ -48,9 +50,9 @@ void PrepareForUnfolding() {
   cout << "\n  Beginning preparation for unfolding..." << endl;
 
   // io parameters
-  const TString sOut("pp200r9embed.profileTest.et9vz55.r03a02rm1chrg.dr03q15.root");
-  const TString SInFF[NHistFF]   = {"output/pp200r9pt5ff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt7ff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt9ff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt11ff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt15ff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt25ff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt35ff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root"};
-  const TString SInRFF[NHistRFF] = {"output/pp200r9pt4rff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt5rff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt7rff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt9rff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt11rff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt15rff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt25rff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt35rff.profileTest.et920vz55.r03a02rm1chrg.dr03q15.root"};
+  const TString sOut("pp200r9embed.dFmatch0_2pi_v2.withParTrgCuts.pTbinOne.et9vz55.r03a02rm1chrg.dr03q15.root");
+  const TString SInFF[NHistFF]   = {"output/DfVsPhiTest/pp200r9pt5ff.dFmatch0_2pi_v2.withParTrgCuts.pTbinOne.et920vz55.r03a02rm1chrg.dr03q15.root", "output/DfVsPhiTest/pp200r9pt7ff.dFmatch0_2pi_v2.withParTrgCuts.pTbinOne.et920vz55.r03a02rm1chrg.dr03q15.root", "output/DfVsPhiTest/pp200r9pt9ff.dFmatch0_2pi_v2.withParTrgCuts.pTbinOne.et920vz55.r03a02rm1chrg.dr03q15.root", "output/DfVsPhiTest/pp200r9pt11ff.dFmatch0_2pi_v2.withParTrgCuts.pTbinOne.et920vz55.r03a02rm1chrg.dr03q15.root", "output/DfVsPhiTest/pp200r9pt15ff.dFmatch0_2pi_v2.withParTrgCuts.pTbinOne.et920vz55.r03a02rm1chrg.dr03q15.root", "output/DfVsPhiTest/pp200r9pt25ff.dFmatch0_2pi_v2.withParTrgCuts.pTbinOne.et920vz55.r03a02rm1chrg.dr03q15.root", "output/DfVsPhiTest/pp200r9pt35ff.dFmatch0_2pi_v2.withParTrgCuts.pTbinOne.et920vz55.r03a02rm1chrg.dr03q15.root"};
+  const TString SInRFF[NHistRFF] = {"output/DfVsPhiTest/pp200r9pt4rff.dFmatch0_2pi_v2.withParTrgCuts.pTbinOne.et920vz55.r03a02rm1chrg.dr03q15.root", "output/DfVsPhiTest/pp200r9pt5rff.dFmatch0_2pi_v2.withParTrgCuts.pTbinOne.et920vz55.r03a02rm1chrg.dr03q15.root", "output/DfVsPhiTest/pp200r9pt7rff.dFmatch0_2pi_v2.withParTrgCuts.pTbinOne.et920vz55.r03a02rm1chrg.dr03q15.root", "output/DfVsPhiTest/pp200r9pt9rff.dFmatch0_2pi_v2.withParTrgCuts.pTbinOne.et920vz55.r03a02rm1chrg.dr03q15.root", "output/DfVsPhiTest/pp200r9pt11rff.dFmatch0_2pi_v2.withParTrgCuts.pTbinOne.et920vz55.r03a02rm1chrg.dr03q15.root", "output/DfVsPhiTest/pp200r9pt15rff.dFmatch0_2pi_v2.withParTrgCuts.pTbinOne.et920vz55.r03a02rm1chrg.dr03q15.root", "output/DfVsPhiTest/pp200r9pt25rff.dFmatch0_2pi_v2.withParTrgCuts.pTbinOne.et920vz55.r03a02rm1chrg.dr03q15.root", "output/DfVsPhiTest/pp200r9pt35rff.dFmatch0_2pi_v2.withParTrgCuts.pTbinOne.et920vz55.r03a02rm1chrg.dr03q15.root"};
 
 
   // open files
@@ -272,6 +274,35 @@ void PrepareForUnfolding() {
   }
   cout << "    Scaled by bin width." << endl;
 
+
+  // determine what to normalize with
+  Double_t NormsFF[NHistFF];
+  Double_t NormsRFF[NHistRFF];
+  TH1D     *hNormFF[NHistFF];
+  TH1D     *hNormRFF[NHistRFF];
+  if (UseRootNTrgs) {
+    for (UInt_t iHistFF = 0; iHistFF < NHistFF; iHistFF++) {
+      hNormFF[iHistFF] = (TH1D*) fInFF[iHistFF] -> Get(SNorm.Data());
+      NormsFF[iHistFF] = hNormFF[iHistFF] -> GetEntries();
+    }
+    for (UInt_t iHistRFF = 0; iHistRFF < NHistRFF; iHistRFF++) {
+      hNormRFF[iHistRFF] = (TH1D*) fInRFF[iHistRFF] -> Get(SNorm.Data());
+      NormsRFF[iHistRFF] = hNormRFF[iHistRFF] -> GetEntries();
+    }
+  }
+  else {
+    for (UInt_t iHistFF = 0; iHistFF < NHistFF; iHistFF++) {
+      NormsFF[iHistFF] = NTrgsFF[iHistFF];
+      cout << "CHECK [" << iHistFF << "]: " << NormsFF[iHistFF] << endl;
+    }
+    for (UInt_t iHistRFF = 0; iHistRFF < NHistRFF; iHistRFF++) {
+      NormsRFF[iHistRFF] = NTrgsRFF[iHistRFF];
+      cout << "CHECK [" << iHistRFF << "]: " << NormsRFF[iHistRFF] << endl;
+    }
+  }
+  cout << "    Determined normalization factors." << endl;
+
+
   // scale histograms
   Double_t normFF(0.);
   Double_t normRFF(0.);
@@ -441,8 +472,8 @@ void PrepareForUnfolding() {
         const Double_t xWidth = hResSumFF -> GetXaxis() -> GetBinWidth(iBinX);
         const Double_t yWidth = hResSumFF -> GetYaxis() -> GetBinWidth(iBinY);
         const Double_t dArea  = xWidth * yWidth;
-        const Double_t newVal = (binVal / binNormFF) * dArea;
-        const Double_t newErr = (binErr / binNormFF) * dArea;
+        const Double_t newVal = (binVal / binNormFF)/* * dArea*/;
+        const Double_t newErr = (binErr / binNormFF)/* * dArea*/;
         hResSumFF -> SetBinContent(iBinX, iBinY, newVal);
         hResSumFF -> SetBinError(iBinX, iBinY, newErr);
       }
@@ -457,8 +488,8 @@ void PrepareForUnfolding() {
         const Double_t xWidth = hResSumRFF -> GetXaxis() -> GetBinWidth(iBinX);
         const Double_t yWidth = hResSumRFF -> GetYaxis() -> GetBinWidth(iBinY);
         const Double_t dArea  = xWidth * yWidth;
-        const Double_t newVal = (binVal / binNormRFF) * dArea;
-        const Double_t newErr = (binErr / binNormRFF) * dArea;
+        const Double_t newVal = (binVal / binNormRFF)/* * dArea*/;
+        const Double_t newErr = (binErr / binNormRFF)/* * dArea*/;
         hResSumRFF -> SetBinContent(iBinX, iBinY, newVal);
         hResSumRFF -> SetBinError(iBinX, iBinY, newErr);
       }
@@ -473,71 +504,13 @@ void PrepareForUnfolding() {
         const Double_t xWidth = hResSumAll -> GetXaxis() -> GetBinWidth(iBinX);
         const Double_t yWidth = hResSumAll -> GetYaxis() -> GetBinWidth(iBinY);
         const Double_t dArea  = xWidth * yWidth;
-        const Double_t newVal = (binVal / binNormAll) * dArea;
-        const Double_t newErr = (binErr / binNormAll) * dArea;
+        const Double_t newVal = (binVal / binNormAll)/* * dArea*/;
+        const Double_t newErr = (binErr / binNormAll)/* * dArea*/;
         hResSumAll -> SetBinContent(iBinX, iBinY, newVal);
         hResSumAll -> SetBinError(iBinX, iBinY, newErr);
       }
     }
   }
-
-/*
-  // normalize response profiles
-  const UInt_t nXPbinsFF  = pResSumFF  -> GetNbinsX();
-  const UInt_t nYPbinsFF  = pResSumFF  -> GetNbinsY();
-  const UInt_t nXPbinsRFF = pResSumRFF -> GetNbinsX();
-  const UInt_t nYPbinsRFF = pResSumRFF -> GetNbinsY();
-  const UInt_t nXPbinsAll = pResSumAll -> GetNbinsX();
-  const UInt_t nYPbinsAll = pResSumAll -> GetNbinsY();
-  for (UInt_t iBinY = 0; iBinY < nYPbinsFF; iBinY++) {
-    const Double_t binNormFF = pResSumFF -> Integral(1, nXPbinsFF);
-    if (binNormFF != 0.) {
-      for (UInt_t iBinX = 0; iBinX < nXPbinsFF; iBinX++) {
-        const Double_t binVal = pResSumFF -> GetBinContent(iBinX, iBinY);
-        const Double_t binErr = pResSumFF -> GetBinError(iBinX, iBinY);
-        const Double_t xWidth = pResSumFF -> GetXaxis() -> GetBinWidth(iBinX);
-        const Double_t yWidth = pResSumFF -> GetYaxis() -> GetBinWidth(iBinY);
-        const Double_t dArea  = xWidth * yWidth;
-        const Double_t newVal = (binVal / binNormFF) * dArea;
-        const Double_t newErr = (binErr / binNormFF) * dArea;
-        pResSumFF -> SetBinContent(iBinX, iBinY, newVal);
-        pResSumFF -> SetBinError(iBinX, iBinY, newErr);
-      }
-    }
-  }
-  for (UInt_t iBinY = 0; iBinY < nYPbinsRFF; iBinY++) {
-    const Double_t binNormRFF = pResSumRFF -> Integral(1, nXPbinsRFF);
-    if (binNormRFF != 0.) {
-      for (UInt_t iBinX = 0; iBinX < nXPbinsRFF; iBinX++) {
-        const Double_t binVal = pResSumRFF -> GetBinContent(iBinX, iBinY);
-        const Double_t binErr = pResSumRFF -> GetBinError(iBinX, iBinY);
-        const Double_t xWidth = pResSumRFF -> GetXaxis() -> GetBinWidth(iBinX);
-        const Double_t yWidth = pResSumRFF -> GetYaxis() -> GetBinWidth(iBinY);
-        const Double_t dArea  = xWidth * yWidth;
-        const Double_t newVal = (binVal / binNormRFF) * dArea;
-        const Double_t newErr = (binErr / binNormRFF) * dArea;
-        pResSumRFF -> SetBinContent(iBinX, iBinY, newVal);
-        pResSumRFF -> SetBinError(iBinX, iBinY, newErr);
-      }
-    }
-  }
-  for (UInt_t iBinY = 0; iBinY < nYPbinsAll; iBinY++) {
-    const Double_t binNormAll = pResSumAll -> Integral(1, nXPbinsAll);
-    if (binNormAll != 0.) {
-      for (UInt_t iBinX = 0; iBinX < nXPbinsAll; iBinX++) {
-        const Double_t binVal = pResSumAll -> GetBinContent(iBinX, iBinY);
-        const Double_t binErr = pResSumAll -> GetBinError(iBinX, iBinY);
-        const Double_t xWidth = pResSumAll -> GetXaxis() -> GetBinWidth(iBinX);
-        const Double_t yWidth = pResSumAll -> GetYaxis() -> GetBinWidth(iBinY);
-        const Double_t dArea  = xWidth * yWidth;
-        const Double_t newVal = (binVal / binNormAll) * dArea;
-        const Double_t newErr = (binErr / binNormAll) * dArea;
-        pResSumAll -> SetBinContent(iBinX, iBinY, newVal);
-        pResSumAll -> SetBinError(iBinX, iBinY, newErr);
-      }
-    }
-  }
-*/
   cout << "    Normalized histograms." << endl;
 
 
@@ -560,7 +533,7 @@ void PrepareForUnfolding() {
   const TString sFit("[0]*(1.-TMath::Exp(-1.*[1]*x))");
   const Float_t guess0(0.9);
   const Float_t guess1(5.); 
-  const Float_t xyFit[2] = {0.2, 10.0};
+  const Float_t xyFit[2] = {0.2, 8.0};
 
   TF1 *fFitFF  = new TF1("fEffFF", sFit.Data(), xyFit[0], xyFit[1]);
   TF1 *fFitRFF = new TF1("fEffRFF", sFit.Data(), xyFit[0], xyFit[1]);
