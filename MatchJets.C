@@ -18,7 +18,7 @@ using namespace std;
 
 
 // filepaths
-static const TString SOutDefault("phiTestPi_Pi.v5.root");
+static const TString SOutDefault("test.root");
 static const TString SParDefault("../JetMaker/mc/output/pp200r9pt25rff.particle.r03rm1chrg.root");
 static const TString SDetDefault("../JetMaker/mudst/output/ForResponseMatrix/pp200r9pt25rff.et920vz55had.r03rm1chrg.root");
 
@@ -546,18 +546,6 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
     pResponsePtcN = new TProfile("pResponsePtcN", "Response matrix, jet p_{T}^{corr} (normalized); detector; particle", pNum, pBin[0], pBin[1], "S");
   }
 
-  // TEST [06.29.2018]
-  TH1D *hPhiMatchCheckPar1 = new TH1D("hPhiMatchCheckPar1", "", 720, -2. * pi, 2. * pi);
-  TH1D *hPhiMatchCheckPar2 = new TH1D("hPhiMatchCheckPar2", "", 720, -2. * pi, 2. * pi);
-  TH1D *hPhiMatchCheckDet1 = new TH1D("hPhiMatchCheckDet1", "", 720, -2. * pi, 2. * pi);
-  TH1D *hPhiMatchCheckDet2 = new TH1D("hPhiMatchCheckDet2", "", 720, -2. * pi, 2. * pi);
-  TH1D *hPhiMatchCheckDif  = new TH1D("hPhiMatchCheckDif", "", 720, -2. * pi, 2. * pi);
-  hPhiMatchCheckPar1 -> Sumw2();
-  hPhiMatchCheckPar2 -> Sumw2();
-  hPhiMatchCheckDet1 -> Sumw2();
-  hPhiMatchCheckDet2 -> Sumw2();
-  hPhiMatchCheckDif  -> Sumw2();
-
 
 
   // check to make sure there are a reasonable no. of events
@@ -738,9 +726,9 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       const Bool_t   isRecoilP = (pDfCut < RecoilDf);
 
       // for matching
+      Double_t hMatchP(pH);
       Double_t fMatchP(pF - pTrgPhi);
       Bool_t   isInParPhiRange(false);
-      hPhiMatchCheckPar1 -> Fill(fMatchP);  // TEST [06.29.2018]
       while (!isInParPhiRange) {
         const Bool_t isAbovePhiMin = (fMatchP >= FmatchMin);
         const Bool_t isUnderPhiMax = (fMatchP <= FmatchMax);
@@ -751,7 +739,6 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
           if (!isUnderPhiMax) fMatchP -= (2. * pi);
         }
       }
-      hPhiMatchCheckPar2 -> Fill(fMatchP);  // TEST [06.29.2018]
 
 
       // consider only recoil jets
@@ -806,9 +793,9 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
         const Bool_t   isRecoilD = (dDfCut < RecoilDf);
 
         // for matching
+        Double_t hMatchD(dH);
         Double_t fMatchD(dF - dTrgPhi);
         Bool_t   isInDetPhiRange(false);
-        hPhiMatchCheckDet1 -> Fill(fMatchD);  // TEST [06.29.2018]
         while (!isInDetPhiRange) {
           const Bool_t isAbovePhiMin = (fMatchD >= FmatchMin);
           const Bool_t isUnderPhiMax = (fMatchD <= FmatchMax);
@@ -819,7 +806,6 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
             if (!isUnderPhiMax) fMatchD -= (2. * pi);
           }
         }
-        hPhiMatchCheckDet2 -> Fill(fMatchD);  // TEST [06.29.2018]
 
 
         // detector cuts
@@ -832,14 +818,16 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
         Double_t s    = dA / pA;
         Double_t dP   = dPt - pPt;
         Double_t dQ   = dP / pPt;
-        Double_t dHpd = TMath::Abs(dH - pH);
+        Double_t dHpd = TMath::Abs(hMatchD - hMatchP);
         Double_t dFpd = TMath::Abs(fMatchD - fMatchP);
-        Double_t dR   = sqrt((dHpd * dHpd) + (dFpd * dFpd));
         if (dPt < Dcut)
           continue;
         if (dFpd > pi)
           dFpd = (2. * pi) - dFpd;
-        hPhiMatchCheckDif -> Fill(dFpd);
+
+        // calculate delta-r
+        Double_t dR2 = (dHpd * dHpd) + (dFpd * dFpd);
+        Double_t dR  = TMath::Sqrt(dR2);
 
         // fill detector histograms
         hJetQt[0]     -> Fill(qT);
@@ -1224,12 +1212,6 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
     hJetSvsDr[i]  -> Write();
   }
   fOut -> cd();
-  // TEST [06.29.2018]
-  hPhiMatchCheckPar1 -> Write();
-  hPhiMatchCheckPar2 -> Write();
-  hPhiMatchCheckDet1 -> Write();
-  hPhiMatchCheckDet2 -> Write();
-  hPhiMatchCheckDif  -> Write();
   fOut -> Close();
 
   // close input
