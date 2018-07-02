@@ -18,7 +18,7 @@ using namespace std;
 
 
 // filepaths
-static const TString SOutDefault("test.root");
+static const TString SOutDefault("phiTestPi_Pi.v5.root");
 static const TString SParDefault("../JetMaker/mc/output/pp200r9pt25rff.particle.r03rm1chrg.root");
 static const TString SDetDefault("../JetMaker/mudst/output/ForResponseMatrix/pp200r9pt25rff.et920vz55had.r03rm1chrg.root");
 
@@ -738,10 +738,19 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       const Bool_t   isRecoilP = (pDfCut < RecoilDf);
 
       // for matching
-      Double_t fMatchP = pF - pTrgPhi;
+      Double_t fMatchP(pF - pTrgPhi);
+      Bool_t   isInParPhiRange(false);
       hPhiMatchCheckPar1 -> Fill(fMatchP);  // TEST [06.29.2018]
-      if (fMatchP < FmatchMin) fMatchP += (2. * pi);
-      if (fMatchP > FmatchMax) fMatchP -= (2. * pi);
+      while (!isInParPhiRange) {
+        const Bool_t isAbovePhiMin = (fMatchP >= FmatchMin);
+        const Bool_t isUnderPhiMax = (fMatchP <= FmatchMax);
+
+        isInParPhiRange = (isAbovePhiMin && isUnderPhiMax);
+        if (!isInParPhiRange) {
+          if (!isAbovePhiMin) fMatchP += (2. * pi);
+          if (!isUnderPhiMax) fMatchP -= (2. * pi);
+        }
+      }
       hPhiMatchCheckPar2 -> Fill(fMatchP);  // TEST [06.29.2018]
 
 
@@ -797,10 +806,19 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
         const Bool_t   isRecoilD = (dDfCut < RecoilDf);
 
         // for matching
-        Double_t fMatchD = dF - dTrgPhi;
+        Double_t fMatchD(dF - dTrgPhi);
+        Bool_t   isInDetPhiRange(false);
         hPhiMatchCheckDet1 -> Fill(fMatchD);  // TEST [06.29.2018]
-        if (fMatchD < FmatchMin) fMatchD += (2. * pi);
-        if (fMatchD > FmatchMax) fMatchD -= (2. * pi);
+        while (!isInDetPhiRange) {
+          const Bool_t isAbovePhiMin = (fMatchD >= FmatchMin);
+          const Bool_t isUnderPhiMax = (fMatchD <= FmatchMax);
+
+          isInDetPhiRange = (isAbovePhiMin && isUnderPhiMax);
+          if (!isInDetPhiRange) {
+            if (!isAbovePhiMin) fMatchD += (2. * pi);
+            if (!isUnderPhiMax) fMatchD -= (2. * pi);
+          }
+        }
         hPhiMatchCheckDet2 -> Fill(fMatchD);  // TEST [06.29.2018]
 
 
