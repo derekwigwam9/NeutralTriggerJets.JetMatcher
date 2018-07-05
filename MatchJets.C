@@ -59,8 +59,8 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   const Double_t HardCut(10.);  // jets w/ pT > HardCut are considered 'hard'
   const Double_t Pcut(0.);      // pTpar must be above this
   const Double_t Dcut(0.);      // pTdet must be above this
-  const Double_t FmatchMin(-1. * TMath::Pi());
-  const Double_t FmatchMax(TMath::Pi());
+  const Double_t FmatchMin(0.);
+  const Double_t FmatchMax(TMath::TwoPi());
 
   // misc. constants
   const Double_t pi(TMath::Pi());
@@ -547,7 +547,6 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   }
 
 
-
   // check to make sure there are a reasonable no. of events
   UInt_t fEvt  = 0;
   UInt_t nEvts = 0;
@@ -582,10 +581,10 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
     dMap[iDet][2] = dRunId;
   }
 
-
   // vector for matching
   vector<Int_t> matchIndices;
   cout << "    Beginning event loop..." << endl;
+
 
   // event loop
   Int_t  breakVal(0);
@@ -755,7 +754,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       if (pPt < Pcut)
         continue;
       else {
-        hParArea   -> Fill(pA);
+        hParArea   -> Fill(pA);    
         hParPtCorr -> Fill(pPtc);
         nToMatch++;
       }
@@ -786,7 +785,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
         const Double_t dPtc = dPt - (dRho * dA);
 
         // calculate delta phi
-        Double_t dDf = dF - dTrgPhi;
+        Double_t dDf = dF - pTrgPhi;
         if (dDf < ((-1. * pi) / 2.)) dDf += (2. * pi);
         if (dDf > ((3. * pi) / 2.))  dDf -= (2. * pi);
         const Double_t dDfCut    = TMath::Abs(dDf - pi);
@@ -794,7 +793,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
 
         // for matching
         Double_t hMatchD(dH);
-        Double_t fMatchD(dF - dTrgPhi);
+        Double_t fMatchD(dF - pTrgPhi);
         Bool_t   isInDetPhiRange(false);
         while (!isInDetPhiRange) {
           const Bool_t isAbovePhiMin = (fMatchD >= FmatchMin);
@@ -997,7 +996,6 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
       hJetPt[1]       -> Fill(dPt);
       hJetPtCorr[1]   -> Fill(dPtc);
       hJetPhiVsEta[1] -> Fill(dH, dF);
-
 
       // check if detector jet matches particle jet
       Bool_t isMatch = false;
