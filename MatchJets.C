@@ -296,6 +296,8 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   TH1D *hJetS[NMatchTypes];
   TH1D *hJetDp[NMatchTypes];
   TH1D *hJetDq[NMatchTypes];
+  TH2D *hJetDrVsPt[NMatchTypes];
+  TH2D *hJetQtVsPt[NMatchTypes];
   TH2D *hJetQtVsDr[NMatchTypes];
   TH2D *hJetSvsDr[NMatchTypes];
 
@@ -306,7 +308,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   const UInt_t   hNum(100);
   const UInt_t   fNum(360);
   const UInt_t   pNum(83);
-  const UInt_t   qNum(600);
+  const UInt_t   qNum(5000);
   const UInt_t   rNum(600);
   const UInt_t   sNum(600);
   const UInt_t   dNum(100);
@@ -317,7 +319,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   const Double_t hBin[2] = {-5., 5.};
   const Double_t fBin[2] = {-2.*pi, 2.*pi};
   const Double_t pBin[2] = {-3., 80.};
-  const Double_t qBin[2] = {0., 3.};
+  const Double_t qBin[2] = {0., 50.};
   const Double_t rBin[2] = {0., 3.};
   const Double_t sBin[2] = {0., 3.};
   const Double_t dBin[2] = {-50., 50.};
@@ -392,6 +394,14 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   hJetS[0]        = new TH1D("hJetSd", "Jet s=A_{det}/A_{par}, detector (normalization different!)", sNum, sBin[0], sBin[1]);
   hJetDp[0]       = new TH1D("hJetDpD", "Jet #Deltap_{T}=p_{T}^{det}-p_{T}^{par}, detector (normalization different!)", dNum, dBin[0], dBin[1]);
   hJetDq[0]       = new TH1D("hJetDqD", "Jet #Deltaq_{T}=#Deltap_{T}/p_{T}=q_{T}-1, detector (normalization different!)", jNum, jBin[0], jBin[1]);
+  if (UseVariablePtBins) {
+    hJetDrVsPt[0] = new TH2D("hJetDrVsPtD", "Jet #Deltar vs. p_{T}^{jet}(detector), detector (normalization different!); p_{T}^{jet}; #Deltar", nPtBinsX, pTbinsX, rNum, rBin[0], rBin[1]);
+    hJetQtVsPt[0] = new TH2D("hJetQtVsPtD", "Jet q_{T} vs. p_{T}^{jet}(detector), detector (normalization different!); p_{T}^{jet}; q_{T}", nPtBinsX, pTbinsX, qNum, qBin[0], qBin[1]);
+  }
+  else {
+    hJetDrVsPt[0] = new TH2D("hJetDrVsPtD", "Jet #Deltar vs. p_{T}^{jet}(detector), detector (normalization different!); p_{T}^{jet}; #Deltar", pNum, pBin[0], pBin[1], rNum, rBin[0], rBin[1]);
+    hJetQtVsPt[0] = new TH2D("hJetQtVsPtD", "Jet q_{T} vs. p_{T}^{jet}(detector), detector (normalization different!); p_{T}^{jet}; q_{T}", pNum, pBin[0], pBin[1], qNum, qBin[0], qBin[1]);
+  }
   hJetQtVsDr[0]   = new TH2D("hJetQtVsDrD", "Jet q_{T} vs. #Deltar, detector (normalization different!); #Deltar; q_{T}", rNum, rBin[0], rBin[1], qNum, qBin[0], qBin[1]);
   hJetSvsDr[0]    = new TH2D("hJetSvsDrD", "Jet s vs. #Deltar, detector (normalization different!); #Deltar; s", rNum, rBin[0], rBin[1], sNum, sBin[0], sBin[1]);
   // candidate matches
@@ -412,6 +422,14 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   hJetS[1]        = new TH1D("hJetSc", "Jet s=A_{cand}/A_{par}, candidates", sNum, sBin[0], sBin[1]);
   hJetDp[1]       = new TH1D("hJetDpC", "Jet #Deltap_{T}=p_{T}^{cand}-p_{T}^{par}, candidates (normalization different!)", dNum, dBin[0], dBin[1]);
   hJetDq[1]       = new TH1D("hJetDqC", "Jet #Deltaq_{T}=#Deltap_{T}/p_{T}=q_{T}-1, candidates (normalization different!)", jNum, jBin[0], jBin[1]);
+  if (UseVariablePtBins) {
+    hJetDrVsPt[1] = new TH2D("hJetDrVsPtC", "Jet #Deltar vs. p_{T}^{jet}(detector), candidates (normalization different!); p_{T}^{jet}; #Deltar", nPtBinsX, pTbinsX, rNum, rBin[0], rBin[1]);
+    hJetQtVsPt[1] = new TH2D("hJetQtVsPtC", "Jet q_{T} vs. p_{T}^{jet}(detector), candidates (normalization different!); p_{T}^{jet}; q_{T}", nPtBinsX, pTbinsX, qNum, qBin[0], qBin[1]);
+  }
+  else {
+    hJetDrVsPt[1] = new TH2D("hJetDrVsPtC", "Jet #Deltar vs. p_{T}^{jet}(detector), candidates (normalization different!); p_{T}^{jet}; #Deltar", pNum, pBin[0], pBin[1], rNum, rBin[0], rBin[1]);
+    hJetQtVsPt[1] = new TH2D("hJetQtVsPtC", "Jet q_{T} vs. p_{T}^{jet}(detector), candidates (normalization different!); p_{T}^{jet}; q_{T}", pNum, pBin[0], pBin[1], qNum, qBin[0], qBin[1]);
+  }
   hJetQtVsDr[1]   = new TH2D("hJetQtVsDrC", "Jet q_{T} vs. #Deltar, candidates; #Deltar; q_{T}", rNum, rBin[0], rBin[1], qNum, qBin[0], qBin[1]);
   hJetSvsDr[1]    = new TH2D("hJetSvsDrC", "Jet s vs. #Deltar, candidates; #Deltar; s", rNum, rBin[0], rBin[1], sNum, sBin[0], sBin[1]);
   // matches
@@ -430,8 +448,16 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   hJetQt[2]       = new TH1D("hJetQtM", "Jet q_{T}, matches", qNum, qBin[0], qBin[1]);
   hJetDr[2]       = new TH1D("hJetDrM", "Jet #Deltar, matches", rNum, rBin[0], rBin[1]);
   hJetS[2]        = new TH1D("hJetSm", "Jet s=A_{match}/A_{par}, matches", sNum, sBin[0], sBin[1]);
-  hJetDp[2]       = new TH1D("hJetDpM", "Jet #Deltap_{T}=p_{T}^{match}-p_{T}^{par}, matches (normalization different!)", dNum, dBin[0], dBin[1]);
-  hJetDq[2]       = new TH1D("hJetDqM", "Jet #Deltaq_{T}=#Deltap_{T}/p_{T}=q_{T}-1, matches (normalization different!)", jNum, jBin[0], jBin[1]);
+  hJetDp[2]       = new TH1D("hJetDpM", "Jet #Deltap_{T}=p_{T}^{match}-p_{T}^{par}, matches", dNum, dBin[0], dBin[1]);
+  hJetDq[2]       = new TH1D("hJetDqM", "Jet #Deltaq_{T}=#Deltap_{T}/p_{T}=q_{T}-1, matches", jNum, jBin[0], jBin[1]);
+  if (UseVariablePtBins) {
+    hJetDrVsPt[2] = new TH2D("hJetDrVsPtM", "Jet #Deltar vs. p_{T}^{jet}(detector), matches; p_{T}^{jet}; #Deltar", nPtBinsX, pTbinsX, rNum, rBin[0], rBin[1]);
+    hJetQtVsPt[2] = new TH2D("hJetQtVsPtM", "Jet q_{T} vs. p_{T}^{jet}(detector), matches; p_{T}^{jet}; q_{T}", nPtBinsX, pTbinsX, qNum, qBin[0], qBin[1]);
+  }
+  else {
+    hJetDrVsPt[2] = new TH2D("hJetDrVsPtM", "Jet #Deltar vs. p_{T}^{jet}(detector), matches; #Deltar", pNum, pBin[0], pBin[1], rNum, rBin[0], rBin[1]);
+    hJetQtVsPt[2] = new TH2D("hJetQtVsPtM", "Jet q_{T} vs. p_{T}^{jet}(detector), matches; q_{T}", pNum, pBin[0], pBin[1], qNum, qBin[0], qBin[1]);
+  }
   hJetQtVsDr[2]   = new TH2D("hJetQtVsDrM", "Jet q_{T} vs. #Deltar, matches", rNum, rBin[0], rBin[1], qNum, qBin[0], qBin[1]);
   hJetSvsDr[2]    = new TH2D("hJetSvsDrM", "Jet s vs. #Deltar, matches", rNum, rBin[0], rBin[1], sNum, sBin[0], sBin[1]);
   // junk (detector jets that weren't matched)
@@ -452,6 +478,14 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   hJetS[3]        = new TH1D("hJetSj", "Jet s=A_{junk}/A_{par}, junk (normalization different!)", sNum, sBin[0], sBin[1]);
   hJetDp[3]       = new TH1D("hJetDpJ", "Jet #Deltap_{T}=p_{T}^{junk}-p_{T}^{par}, junk (normalization different!)", dNum, dBin[0], dBin[1]);
   hJetDq[3]       = new TH1D("hJetDqJ", "Jet #Deltaq_{T}=#Deltap_{T}/p_{T}=q_{T}-1, junk (normalization different!)", jNum, jBin[0], jBin[1]);
+  if (UseVariablePtBins) {
+    hJetDrVsPt[3] = new TH2D("hJetDrVsPtJ", "Jet #Deltar vs. p_{T}^{jet}(detector), junk (normalization different!); p_{T}^{jet}; #Deltar", nPtBinsX, pTbinsX, rNum, rBin[0], rBin[1]);
+    hJetQtVsPt[3] = new TH2D("hJetQtVsPtJ", "Jet q_{T} vs. p_{T}^{jet}(detector), junk (normalization different!); p_{T}^{jet}; q_{T}", nPtBinsX, pTbinsX, qNum, qBin[0], qBin[1]);
+  }
+  else {
+    hJetDrVsPt[3] = new TH2D("hJetDrVsPtJ", "Jet #Deltar vs. p_{T}^{jet}(detector), junk (normalization different!); p_{T}^{jet}; #Deltar", pNum, pBin[0], pBin[1], rNum, rBin[0], rBin[1]);
+    hJetQtVsPt[3] = new TH2D("hJetQtVsPtJ", "Jet q_{T} vs. p_{T}^{jet}(detector), junk (normalization different!); p_{T}^{jet}; q_{T}", pNum, pBin[0], pBin[1], qNum, qBin[0], qBin[1]);
+  }
   hJetQtVsDr[3]   = new TH2D("hJetQtVsDrJ", "Jet q_{T} vs. #Deltar, junk (normalization different!)", rNum, rBin[0], rBin[1], qNum, qBin[0], qBin[1]);
   hJetSvsDr[3]    = new TH2D("hJetSvsDrJ", "Jet s vs. #Deltar, junk (normalization different!)", rNum, rBin[0], rBin[1], sNum, sBin[0], sBin[1]);
   // mystery (jets w/ dR > Rjet and |qT-1|<.1)
@@ -472,6 +506,14 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   hJetS[4]        = new TH1D("hJetSy", "Jet s=A_{?}/A_{par}, mystery", sNum, sBin[0], sBin[1]);
   hJetDp[4]       = new TH1D("hJetDpY", "Jet #Deltap_{T}=p_{T}^{?}-p_{T}^{par}, mystery (normalization different!)", dNum, dBin[0], dBin[1]);
   hJetDq[4]       = new TH1D("hJetDqY", "Jet #Deltaq_{T}=#Deltap_{T}/p_{T}=q_{T}-1, mystery (normalization different!)", jNum, jBin[0], jBin[1]);
+  if (UseVariablePtBins) {
+    hJetDrVsPt[4] = new TH2D("hJetDrVsPtY", "Jet #Deltar vs. p_{T}^{jet}(detector), mystery (normalization different!); p_{T}^{jet}; #Deltar", nPtBinsX, pTbinsX, rNum, rBin[0], rBin[1]);
+    hJetQtVsPt[4] = new TH2D("hJetQtVsPtY", "Jet q_{T} vs. p_{T}^{jet}(detector), mystery (normalization different!); p_{T}^{jet}; q_{T}", nPtBinsX, pTbinsX, qNum, qBin[0], qBin[1]);
+  }
+  else {
+    hJetDrVsPt[4] = new TH2D("hJetDrVsPtY", "Jet #Deltar vs. p_{T}^{jet}(detector), mystery (normalization different!); p_{T}^{jet}; #Deltar", pNum, pBin[0], pBin[1], rNum, rBin[0], rBin[1]);
+    hJetQtVsPt[4] = new TH2D("hJetQtVsPtY", "Jet q_{T} vs. p_{T}^{jet}(detector), mystery (normalization different!); p_{T}^{jet}; q_{T}", pNum, pBin[0], pBin[1], qNum, qBin[0], qBin[1]);
+  }
   hJetQtVsDr[4]   = new TH2D("hJetQtVsDrY", "Jet q_{T} vs. #Deltar, mystery", rNum, rBin[0], rBin[1], qNum, qBin[0], qBin[1]);
   hJetSvsDr[4]    = new TH2D("hJetSvsDrY", "Jet s vs. #Deltar, mystery", rNum, rBin[0], rBin[1], sNum, sBin[0], sBin[1]);
   // not matches (particle jets that weren't matched)
@@ -834,6 +876,8 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
         hJetS[0]      -> Fill(s);
         hJetDp[0]     -> Fill(dP);
         hJetDq[0]     -> Fill(dQ);
+        hJetDrVsPt[0] -> Fill(dPt, dR);
+        hJetQtVsPt[0] -> Fill(dPt, qT);
         hJetQtVsDr[0] -> Fill(dR, qT);
         hJetSvsDr[0]  -> Fill(dR, s);
 
@@ -859,6 +903,8 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
           hJetS[1]        -> Fill(s);
           hJetDp[1]       -> Fill(dP);
           hJetDq[1]       -> Fill(dQ);
+          hJetDrVsPt[1]   -> Fill(dPt, dR);
+          hJetQtVsPt[1]   -> Fill(dPt, qT);
           hJetQtVsDr[1]   -> Fill(dR, qT);
           hJetSvsDr[1]    -> Fill(dR, s);
           nCandidate++;
@@ -870,6 +916,8 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
           hJetS[3]      -> Fill(s);
           hJetDp[3]     -> Fill(dP);
           hJetDq[3]     -> Fill(dQ);
+          hJetDrVsPt[3] -> Fill(dPt, dR);
+          hJetQtVsPt[3] -> Fill(dPt, qT);
           hJetQtVsDr[3] -> Fill(dR, qT);
           hJetSvsDr[3]  -> Fill(dR, s);
         }
@@ -889,6 +937,8 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
           hJetS[4]        -> Fill(s);
           hJetDp[4]       -> Fill(dP);
           hJetDq[4]       -> Fill(dQ);
+          hJetDrVsPt[4]   -> Fill(dPt, dR);
+          hJetQtVsPt[4]   -> Fill(dPt, qT);
           hJetQtVsDr[4]   -> Fill(dR, qT);
           hJetSvsDr[4]    -> Fill(dR, s);
         }
@@ -938,6 +988,8 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
         hJetS[2]        -> Fill(bS);
         hJetDp[2]       -> Fill(bDp);
         hJetDq[2]       -> Fill(bDq);
+        hJetDrVsPt[2]   -> Fill(bPt, bDr);
+        hJetQtVsPt[2]   -> Fill(bPt, bQt);
         hJetQtVsDr[2]   -> Fill(bDr, bQt);
         hJetSvsDr[2]    -> Fill(bDr, bS);
         matchIndices.push_back(bIndex);
@@ -1206,6 +1258,8 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
     hJetS[i]      -> Write();
     hJetDp[i]     -> Write();
     hJetDq[i]     -> Write();
+    hJetDrVsPt[i] -> Write();
+    hJetQtVsPt[i] -> Write();
     hJetQtVsDr[i] -> Write();
     hJetSvsDr[i]  -> Write();
   }
