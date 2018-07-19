@@ -26,17 +26,18 @@ static const UInt_t   NHistFF(7);
 static const UInt_t   NHistRFF(8);
 static const UInt_t   NHistAll(NHistRFF + NHistFF);
 static const UInt_t   NTotal(10);
-static const Double_t NormsFF[NHistFF]   = {2., 37., 163., 463., 2419., 8762., 4455.};
-static const Double_t NormsRFF[NHistRFF] = {1., 5., 36., 204., 628., 2807., 7547., 3855.};
-static const Double_t NormsAll[NHistAll] = {1., 5., 36., 204., 628., 2807., 7547., 3855., 2., 37., 163., 463., 2419., 8762., 4455.};
+static const Double_t NormsFF[NHistFF]   = {2., 25., 111., 357., 2039., 7688., 4063.};
+static const Double_t NormsRFF[NHistRFF] = {1., 3., 26., 152., 515., 2350., 6681., 3549.};
+static const Double_t NormsAll[NHistAll] = {1., 3., 26., 152., 515., 2350., 6681., 3549., 2., 25., 111., 357., 2039., 7688., 4063.};
 static const Double_t WeightsFF[NTotal]  = {1.0, 3.361596e-01, 1.401161e-01, 1.337302e-01, 2.895246e-02, 1.042577e-02, 8.294575e-03, 2.064352e-03, 8.088693e-05, 1.417116e-05};
 static const Double_t WeightsRFF[NTotal] = {1.0, 3.501425e-01, 1.395103e-01, 1.326444e-01, 2.801546e-02, 1.031377e-02, 8.210314e-03, 1.985107e-03, 8.054588e-05, 1.449037e-05};
 
 // options
 static const UInt_t NHist(NHistAll);
 static const UInt_t Configuration(2);
+static const Bool_t UseRootTrgs(true);
 static const Bool_t DoIntNorm(false);
-static const Bool_t VariableBins(false);
+static const Bool_t VariableBins(true);
 
 
 
@@ -47,10 +48,11 @@ void CalculateReconstructionEfficiency() {
   cout << "\n  Beginning reconstruction efficiency calcualation..." << endl;
 
   // io parameters
-  const TString sOut("pp200r9embed.recoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.d18m5y2018.root");
-  const TString sIn[NHist] = {"output/pp200r9pt4rff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt5rff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt7rff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt9rff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt11rff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt15rff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt25rff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt35rff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt5ff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt7ff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt9ff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt11ff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt15ff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt25ff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root", "output/pp200r9pt35ff.forRecoEff.et920vz55dfPi.r03a02rm1chrg.dr03q15.root"};
+  const TString sOut("pp200r9eff.weightingCheckNoWeight.pTbinVar.et920vz55.r03a02rm1chrg.root");
+  const TString sIn[NHist] = {"output/CollabMeetingJul2018/Et920/pp200r9pt4rff.forCollabMeetingJul2018.pTbinVar.et920vz55.r03a02rm1chrg.dr03q15.root", "output/CollabMeetingJul2018/Et920/pp200r9pt5rff.forCollabMeetingJul2018.pTbinVar.et920vz55.r03a02rm1chrg.dr03q15.root", "output/CollabMeetingJul2018/Et920/pp200r9pt7rff.forCollabMeetingJul2018.pTbinVar.et920vz55.r03a02rm1chrg.dr03q15.root", "output/CollabMeetingJul2018/Et920/pp200r9pt9rff.forCollabMeetingJul2018.pTbinVar.et920vz55.r03a02rm1chrg.dr03q15.root", "output/CollabMeetingJul2018/Et920/pp200r9pt11rff.forCollabMeetingJul2018.pTbinVar.et920vz55.r03a02rm1chrg.dr03q15.root", "output/CollabMeetingJul2018/Et920/pp200r9pt15rff.forCollabMeetingJul2018.pTbinVar.et920vz55.r03a02rm1chrg.dr03q15.root", "output/CollabMeetingJul2018/Et920/pp200r9pt25rff.forCollabMeetingJul2018.pTbinVar.et920vz55.r03a02rm1chrg.dr03q15.root", "output/CollabMeetingJul2018/Et920/pp200r9pt35rff.forCollabMeetingJul2018.pTbinVar.et920vz55.r03a02rm1chrg.dr03q15.root", "output/CollabMeetingJul2018/Et920/pp200r9pt5ff.forCollabMeetingJul2018.pTbinVar.et920vz55.r03a02rm1chrg.dr03q15.root", "output/CollabMeetingJul2018/Et920/pp200r9pt7ff.forCollabMeetingJul2018.pTbinVar.et920vz55.r03a02rm1chrg.dr03q15.root", "output/CollabMeetingJul2018/Et920/pp200r9pt9ff.forCollabMeetingJul2018.pTbinVar.et920vz55.r03a02rm1chrg.dr03q15.root", "output/CollabMeetingJul2018/Et920/pp200r9pt11ff.forCollabMeetingJul2018.pTbinVar.et920vz55.r03a02rm1chrg.dr03q15.root", "output/CollabMeetingJul2018/Et920/pp200r9pt15ff.forCollabMeetingJul2018.pTbinVar.et920vz55.r03a02rm1chrg.dr03q15.root", "output/CollabMeetingJul2018/Et920/pp200r9pt25ff.forCollabMeetingJul2018.pTbinVar.et920vz55.r03a02rm1chrg.dr03q15.root", "output/CollabMeetingJul2018/Et920/pp200r9pt35ff.forCollabMeetingJul2018.pTbinVar.et920vz55.r03a02rm1chrg.dr03q15.root"};
   const TString sPar[NHist] = {"EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr", "EventInfo/hParPtCorr"};
   const TString sDet[NHist] = {"EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr", "EventInfo/hDetPtCorr"};
+  const TString sTrg[NHist] = {"EventInfo/hRefmultD", "EventInfo/hRefmultD", "EventInfo/hRefmultD", "EventInfo/hRefmultD", "EventInfo/hRefmultD", "EventInfo/hRefmultD", "EventInfo/hRefmultD", "EventInfo/hRefmultD", "EventInfo/hRefmultD", "EventInfo/hRefmultD", "EventInfo/hRefmultD", "EventInfo/hRefmultD", "EventInfo/hRefmultD", "EventInfo/hRefmultD", "EventInfo/hRefmultD"};
 
 
   // open files
@@ -68,12 +70,14 @@ void CalculateReconstructionEfficiency() {
   // get histograms
   TH1D *hPar[NHist];
   TH1D *hDet[NHist];
+  TH1D *hTrg[NHist];
   for (UInt_t iHist = 0; iHist < NHist; iHist++) {
     hPar[iHist] = (TH1D*) fIn[iHist] -> Get(sPar[iHist].Data());
     hDet[iHist] = (TH1D*) fIn[iHist] -> Get(sDet[iHist].Data());
-    if (!hPar[iHist] || !hDet[iHist]) {
+    hTrg[iHist] = (TH1D*) fIn[iHist] -> Get(sTrg[iHist].Data());
+    if (!hPar[iHist] || !hDet[iHist] || !hTrg[iHist]) {
       cerr << "PANIC: couldn't grab a histogram!\n"
-           << "       hPar[" << iHist << "] = " << hPar[iHist] << ", hDet[" << iHist << "] = " << hDet[iHist]
+           << "       hPar[" << iHist << "] = " << hPar[iHist] << ", hDet[" << iHist << "] = " << hDet[iHist] << ", hTrg[" << iHist << "] = " << hTrg[iHist]
            << endl;
       return;
     }
@@ -83,35 +87,59 @@ void CalculateReconstructionEfficiency() {
 
 
   // scale histograms
-  Double_t normer(0.);
+  Double_t normerFF(0.);
+  Double_t normerRFF(0.);
+  Double_t normerAll(0.);
   for (UInt_t iHist = 0; iHist < NHist; iHist++) {
     switch (Configuration) {
       case 0:
         hPar[iHist] -> Scale(WeightsRFF[(NTotal - NHist) + iHist]);
         hDet[iHist] -> Scale(WeightsRFF[(NTotal - NHist) + iHist]);
-        normer += NormsRFF[iHist] * WeightsRFF[(NTotal - NHist) + iHist];
+        if (UseRootTrgs)
+          normerRFF += ((Double_t) hTrg[iHist] -> GetEntries()) * WeightsRFF[(NTotal - NHist) + iHist];
+        else
+          normerRFF += NormsRFF[iHist] * WeightsRFF[(NTotal - NHist) + iHist];
         break;
       case 1:
         hPar[iHist] -> Scale(WeightsFF[(NTotal - NHist) + iHist]);
         hDet[iHist] -> Scale(WeightsFF[(NTotal - NHist) + iHist]);
-        normer += NormsFF[iHist] * WeightsFF[(NTotal - NHist) + iHist];
+        if (UseRootTrgs)
+          normerFF += ((Double_t) hTrg[iHist] -> GetEntries()) * WeightsFF[(NTotal - NHist) + iHist];
+        else
+          normerFF += NormsFF[iHist] * WeightsFF[(NTotal - NHist) + iHist];
         break;
       case 2:
         const Bool_t isRFF = (iHist < NHistRFF);
         if (isRFF) {
           hPar[iHist] -> Scale(WeightsRFF[(NTotal - NHistRFF) + iHist]);
           hDet[iHist] -> Scale(WeightsRFF[(NTotal - NHistRFF) + iHist]);
-          normer += NormsAll[iHist] * WeightsRFF[(NTotal - NHistRFF) + iHist];
+          if (UseRootTrgs) {
+            normerRFF += ((Double_t) hTrg[iHist] -> GetEntries()) * WeightsRFF[(NTotal - NHistRFF) + iHist];
+            normerAll += ((Double_t) hTrg[iHist] -> GetEntries()) * WeightsRFF[(NTotal - NHistRFF) + iHist];
+          }
+          else {
+            normerRFF += NormsAll[iHist] * WeightsRFF[(NTotal - NHistRFF) + iHist];
+            normerAll += NormsAll[iHist] * WeightsRFF[(NTotal - NHistRFF) + iHist];
+          }
         }
         else {
           hPar[iHist] -> Scale(WeightsFF[(NTotal - NHistFF) + (iHist - NHistRFF)]);
           hDet[iHist] -> Scale(WeightsFF[(NTotal - NHistFF) + (iHist - NHistRFF)]);
-          normer += NormsAll[iHist] * WeightsFF[(NTotal - NHistFF) + (iHist - NHistRFF)];
+          if (UseRootTrgs) {
+            normerFF  += ((Double_t) hTrg[iHist] -> GetEntries()) * WeightsFF[(NTotal - NHistFF) + (iHist - NHistRFF)];
+            normerAll += ((Double_t) hTrg[iHist] -> GetEntries()) * WeightsFF[(NTotal - NHistFF) + (iHist - NHistRFF)];
+          }
+          else {
+            normerFF  += NormsAll[iHist] * WeightsFF[(NTotal - NHistFF) + (iHist - NHistRFF)];
+            normerAll += NormsAll[iHist] * WeightsFF[(NTotal - NHistFF) + (iHist - NHistRFF)];
+          }
         }
         break;
     }
   }
-  cout << "    Scaled histograms." << endl;
+  cout << "    Scaled histograms.\n"
+       << "      norm(RFF, FF, All) = (" << normerRFF << ", " << normerFF << ", " << normerAll << ")"
+       << endl;
 
 
   // sum histograms
@@ -122,8 +150,29 @@ void CalculateReconstructionEfficiency() {
   hSumP -> Reset("ICE");
   hSumD -> Reset("ICE");
   for (UInt_t iHist = 0; iHist < NHist; iHist++) {
-    hSumP -> Add(hPar[iHist]);
-    hSumD -> Add(hDet[iHist]);
+    switch (Configuration) {
+      const Double_t weightFF  = 1.;
+      const Double_t weightRFF = 1.;
+      case 0:
+        hSumP -> Add(hPar[iHist], weightRFF);
+        hSumD -> Add(hDet[iHist], weightRFF);
+        break;
+      case 1:
+        hSumP -> Add(hPar[iHist], weightFF);
+        hSumD -> Add(hDet[iHist], weightFF);
+        break;
+      case 2:
+        const Bool_t isRFF = (iHist < NHistRFF);
+        if (isRFF) {
+          hSumP -> Add(hPar[iHist], weightRFF);
+          hSumD -> Add(hDet[iHist], weightRFF);
+        }
+        else {
+          hSumP -> Add(hPar[iHist], weightFF);
+          hSumD -> Add(hDet[iHist], weightFF);
+        }
+        break;
+    }
   }
   cout << "    Summed histograms." << endl;
 
@@ -155,8 +204,20 @@ void CalculateReconstructionEfficiency() {
     hSumD -> Scale(1. / dIntegral);
   }
   else {
-    hSumP -> Scale(1. / normer);
-    hSumD -> Scale(1. / normer);
+    switch (Configuration) {
+      case 0:
+        hSumP -> Scale(1. / normerRFF);
+        hSumD -> Scale(1. / normerRFF);
+        break;
+      case 1:
+        hSumP -> Scale(1. / normerFF);
+        hSumD -> Scale(1. / normerFF);
+        break;
+      case 2:
+        hSumP -> Scale(1. / normerAll);
+        hSumD -> Scale(1. / normerAll);
+        break;
+    }
   }
   cout << "    Normalized histograms." << endl;
 
@@ -172,7 +233,7 @@ void CalculateReconstructionEfficiency() {
   // set styles
   const UInt_t  cSum[2] = {858, 898};
   const UInt_t  mSum[2] = {7, 4};
-  const UInt_t  cEff(878);
+  const UInt_t  cEff(1);
   const UInt_t  mEff(8);
   const UInt_t  fTxt(42);
   const UInt_t  fCnt(1);
