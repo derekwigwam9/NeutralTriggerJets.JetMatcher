@@ -36,8 +36,8 @@ void CalculateEnergyResolution() {
   cout << "\n  Beginning JER calculation..." << endl;
 
   // input parameters
-  const TString sIn("output/CollabMeetingJul2018/pp200r9embed.forCollabMeetingJul2018_MatchJets.pTbinOne.et9vz55.r03a02rm1chrg.dr03q15.root");
-  const TString sOut("jetEnergyResolution.forCollabMeetingJul2018.pTbinOne.et920vz55.r03a02rm1chrg.dr03q015185.root");
+  const TString sIn("pp200r9embed.pTbinOne.et920vz55.r02a005rm1chrg.root");
+  const TString sOut("jetEnergyResolution.et920vz55.r02a005rm1chrg.root");
   const TString sMatrix("hResponseAll");
 
   // style parameters
@@ -45,7 +45,6 @@ void CalculateEnergyResolution() {
   const UInt_t  fLin(1);
   const UInt_t  fCnt(1);
   const UInt_t  fTxt(42);
-  const UInt_t  fAln(12);
   const UInt_t  fColL(0);
   const UInt_t  fLog(1);
   const UInt_t  fGrid(0);
@@ -54,11 +53,20 @@ void CalculateEnergyResolution() {
   const Float_t fLab(0.03);
   const Float_t fOffX(1.);
   const Float_t fOffY(1.1);
-  const Float_t fLeg1(0.1);
-  const Float_t fLeg2(0.3);
   const TString sTitle("");
   const TString sTitleX("p_{T}^{reco}(detector) [GeV/c]");
   const TString sTitleY("(1/N^{trg}_{eff}) dN^{jet}/dp_{T}^{reco} [GeV/c]^{-1}");
+
+  // misc parameters
+  const UInt_t  fAln(12);
+  const Float_t fLeg1(0.1);
+  const Float_t fLeg2(0.3);
+  const Float_t fTxt1(0.3);
+  const Float_t fTxt2(0.5);
+  const TString sSystem("pp-collisions, #sqrt{s} = 200 GeV");
+  const TString sTrigger("h^{#pm} trigger, embedding");
+  const TString sJets("anti-k_{T}, R = 0.2");
+  const TString sType("#bf{charged jets}");
 
 
   // open files
@@ -184,6 +192,18 @@ void CalculateEnergyResolution() {
   }
   cout << "    Made legend." << endl;
 
+  // make text
+  TPaveText *pInfo = new TPaveText(fTxt1, fTxt1, fTxt2, fTxt2, "NDC NB");
+  pInfo -> SetFillColor(fColL);
+  pInfo -> SetLineColor(fColL);
+  pInfo -> SetTextFont(fTxt);
+  pInfo -> SetTextAlign(fAln);
+  pInfo -> AddText(sSystem.Data());
+  pInfo -> AddText(sTrigger.Data());
+  pInfo -> AddText(sJets.Data());
+  pInfo -> AddText(sType.Data());
+  cout << "    Made text." << endl;
+
 
   // plot results
   TCanvas *cResolution = new TCanvas("cJetEnergyResolution", "", fSizX, fSizY);
@@ -194,6 +214,7 @@ void CalculateEnergyResolution() {
     hPtBins[iPtBin] -> Draw("same");
   }
   lPtBins     -> Draw();
+  pInfo       -> Draw();
   fOut        -> cd();
   cResolution -> Write();
   cResolution -> Close();
