@@ -18,20 +18,20 @@ using namespace std;
 
 
 // filepaths
-static const TString SOutDefault("test.root");
-static const TString SParDefault("../JetMaker/mc/output/pp200r9pt25rff.particle.r03rm1chrg.root");
-static const TString SDetDefault("../JetMaker/mudst/output/ForResponseMatrix/pp200r9pt25rff.et920vz55had.r03rm1chrg.root");
+static const TString SOutDefault("pp200r9pt25rff.effTestM5.r02rm1chrg.root");
+static const TString SParDefault("input/pp200py.resTestPar.et920pi0.r02rm1chrg.d6m9y2018.root");
+static const TString SDetDefault("input/pp200py.resTestDet.et920pi0.r02rm1chrg.d6m9y2018.root");
 
 // jet parameters
-static const Double_t Rcut(0.3);      // Rcut = Rjet
-static const Double_t MinArea(0.2);   // R03: 0.2, R04: 0.5, R05: 0.65, R07: 1.2
+static const Double_t Rcut(0.2);       // Rcut = Rjet
+static const Double_t MinArea(0.05);   // R02: 0.05, R03: 0.2, R04: 0.35, R05: 0.65, R07: 1.2
 static const Double_t MinJetPt(0.2);
-static const Double_t MaxJetPt(30.);  // max detector jet pT
+static const Double_t MaxJetPt(30.);   // max detector jet pT
 
 // misc parameters
 static const Bool_t DoNorm(false);
-static const Bool_t UseVariablePtBins(false);
-static const Bool_t UseParticleLevelTrigger(true);
+static const Bool_t UseVariablePtBins(true);
+static const Bool_t UseParticleLevelTrigger(false);
 static const UInt_t NHadIds(16);
 static const UInt_t NJetTypes(7);
 static const UInt_t NMatchTypes(5);
@@ -65,10 +65,10 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   // misc. constants
   const Double_t pi(TMath::Pi());
   const Double_t RecoilDf(TMath::PiOver4());
-  const Double_t nPtBinsX(36);
-  const Double_t nPtBinsY(36);
-  const Double_t pTbinsX[37] = {-1., -0.8, -0.6, -0.4, -0.2, 0., 0.2, 0.4, 0.6, 0.8, 1., 1.5, 2., 2.5, 3., 3.5, 4., 5., 6., 7., 8., 9., 10., 12., 14., 16., 18., 20., 22.5, 25., 27.5, 30., 35., 40., 50., 60., 80.};
-  const Double_t pTbinsY[37] = {-1., -0.8, -0.6, -0.4, -0.2, 0., 0.2, 0.4, 0.6, 0.8, 1., 1.5, 2., 2.5, 3., 3.5, 4., 5., 6., 7., 8., 9., 10., 12., 14., 16., 18., 20., 22.5, 25., 27.5, 30., 35., 40., 50., 60., 80.};
+  const Double_t nPtBinsX(22);
+  const Double_t nPtBinsY(22);
+  const Double_t pTbinsX[23] = {-5., -3., -2., -1.5, -1., -0.6, -0.2, 0., 0.2, 0.6, 1., 1.5, 2., 3., 5., 8., 12., 17., 23., 30., 38., 47., 57.};
+  const Double_t pTbinsY[23] = {-5., -3., -2., -1.5, -1., -0.6, -0.2, 0., 0.2, 0.6, 1., 1.5, 2., 3., 5., 8., 12., 17., 23., 30., 38., 47., 57.};
   cout << "    Opening files and grabbing trees..." << endl;
 
 
@@ -206,7 +206,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
 
 
   // set particle branches
-  tPar -> SetBranchAddress("eventIndex", &pEventIndex, &bEventIndexP);
+  tPar -> SetBranchAddress("EventIndex", &pEventIndex, &bEventIndexP);
   tPar -> SetBranchAddress("RunId", &pRunId, &bRunIdP);
   tPar -> SetBranchAddress("Refmult", &pRefmult, &bRefmultP);
   tPar -> SetBranchAddress("NJets", &pNJets, &bNJetsP);
@@ -217,7 +217,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   tPar -> SetBranchAddress("TrgEt", &pTrgEt, &bTrgEtP);
   tPar -> SetBranchAddress("Rho", &pRho, &bRhoP);
   tPar -> SetBranchAddress("Sigma", &pSigma, &bSigmaP);
-  tPar -> SetBranchAddress("Vz", &pVz,&bVzP);
+  tPar -> SetBranchAddress("Vz", &pVz, &bVzP);
   tPar -> SetBranchAddress("JetIndex", &pJetIndex, &bJetIndexP);
   tPar -> SetBranchAddress("JetPt", &pJetPt, &bJetPtP);
   tPar -> SetBranchAddress("JetNCons", &pJetNCons, &bJetNConsP);
@@ -232,7 +232,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   tPar -> SetBranchAddress("JetConsE", &pJetConsE, &bJetConsEP);
 
   // set detector branches
-  tDet -> SetBranchAddress("eventIndex", &dEventIndex, &bEventIndexD);
+  tDet -> SetBranchAddress("EventIndex", &dEventIndex, &bEventIndexD);
   tDet -> SetBranchAddress("RunId", &dRunId, &bRunIdD);
   tDet -> SetBranchAddress("Refmult", &dRefmult, &bRefmultD);
   tDet -> SetBranchAddress("NJets", &dNJets, &bNJetsD);
@@ -307,7 +307,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   const UInt_t   aNum(500);
   const UInt_t   hNum(100);
   const UInt_t   fNum(360);
-  const UInt_t   pNum(83);
+  const UInt_t   pNum(100);
   const UInt_t   qNum(5000);
   const UInt_t   rNum(600);
   const UInt_t   sNum(600);
@@ -318,7 +318,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   const Double_t aBin[2] = {0., 5.};
   const Double_t hBin[2] = {-5., 5.};
   const Double_t fBin[2] = {-2.*pi, 2.*pi};
-  const Double_t pBin[2] = {-3., 80.};
+  const Double_t pBin[2] = {-5., 95.};
   const Double_t qBin[2] = {0., 50.};
   const Double_t rBin[2] = {0., 3.};
   const Double_t sBin[2] = {0., 3.};
@@ -637,7 +637,7 @@ void MatchJets(const TString pPath=SParDefault, const TString dPath=SDetDefault,
   UInt_t nTrig(0);
   for (UInt_t i = 0; i < nEvts; i++) {
 
-    // locate event in geant or mudst tree
+    // locate event in particle or detector tree
     Int_t iParTree = -1;
     Int_t iDetTree = -1;
     switch (fEvt) {
